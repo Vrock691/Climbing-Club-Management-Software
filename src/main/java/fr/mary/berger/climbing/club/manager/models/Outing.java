@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.entities;
+package fr.mary.berger.climbing.club.manager.models;
 
 import jakarta.persistence.*;
 import lombok.Getter;
