@@ -4,4 +4,5 @@ import fr.mary.berger.climbing.club.manager.models.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberDAO extends JpaRepository<Member, Long> {
+    Member findMemberById(Long id);
 }
