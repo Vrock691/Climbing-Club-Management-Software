@@ -34,7 +34,7 @@ public class TestDataInitializer implements CommandLineRunner {
         List<Category> categories = new ArrayList<>(List.of());
         for (int i = 0; i < 50; i++) {
             Category newCategory = new Category();
-            newCategory.setName("test" + i);
+            newCategory.setName("category-" + i);
             categories.add(newCategory);
         }
         categoryDAO.saveAll(categories);

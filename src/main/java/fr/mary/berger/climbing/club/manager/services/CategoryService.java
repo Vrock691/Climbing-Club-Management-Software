@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -21,4 +23,11 @@ public class CategoryService {
         categoryDAO.save(category);
     }
 
+    public Optional<Category> getCategoryById(long id) {
+        return categoryDAO.findById(id);
+    }
+
+    public void updateCategory(Category updatedCategory) {
+        categoryDAO.save(updatedCategory);
+    }
 }
