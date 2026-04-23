@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/auth")
 @RequiredArgsConstructor()
 public class AuthController {
 
@@ -32,17 +33,6 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public String processForgot(@RequestParam String email, Model model) {
-        try {
-            model.addAttribute("message", "Un mail a été envoyé si le compte existe.");
-        } catch (Exception e) {
-            model.addAttribute("error", "Erreur lors de l'envoi.");
-        }
-        return "passwordRecoveryScreen";
-    }
-
-    // TODO: Renommer la route
-    @PostMapping("/forgot-password2")
     public String traiterRecuperation(@RequestParam("email") String email, Model model) {
         Optional<Member> membreOpt = memberService.findMemberByEmail(email);  // utilisation méthode générique todo : adapter
 
@@ -53,8 +43,8 @@ public class AuthController {
             String mdpTemporaire = "Escalade-" + (int)(Math.random() * 10000);
 
             // Mise à jour du membre sur la bdd
-         //   membre.setPassword(passwordEncoder.encode(mdpTemporaire));
-         //   membreService.sauvegarder(membre);                              // utilisation méthode générique todo : adapter
+            //   membre.setPassword(passwordEncoder.encode(mdpTemporaire));
+            //   membreService.sauvegarder(membre);                              // utilisation méthode générique todo : adapter
 
             // Envoie du mail
             try {

@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 
-//@Configuration
+@Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = false, jsr250Enabled = true)
 public class SpringSecurity {
@@ -48,7 +48,7 @@ public class SpringSecurity {
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")                      // Spring adds /app automatically
+                        .loginPage("/auth/login")                      // Spring adds /app automatically
                         .defaultSuccessUrl("/public/categories", true)
                         .permitAll()
                 )
