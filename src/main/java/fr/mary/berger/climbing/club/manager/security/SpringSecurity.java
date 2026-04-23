@@ -8,9 +8,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
+//@Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = false, jsr250Enabled = true)
 public class SpringSecurity {
 
     /*
@@ -29,7 +29,6 @@ public class SpringSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         String[] anonymousRequests = {
-                "/",
                 "/public/**",
                 "/login",
                 "/forgot-password",
@@ -45,16 +44,16 @@ public class SpringSecurity {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(anonymousRequests).permitAll()
-                        .requestMatchers(memberRequests).hasRole("MEMBRE") // --> Resstriction pour les membres
-                        .anyRequest().authenticated() // --> Securité par défaut
+                        .requestMatchers(memberRequests).hasRole("MEMBRE")
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/login")                      // Spring adds /app automatically
                         .defaultSuccessUrl("/public/categories", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/public/categories")
+                        .logoutSuccessUrl("/public/categories")   // Same here
                         .permitAll()
                 );
 

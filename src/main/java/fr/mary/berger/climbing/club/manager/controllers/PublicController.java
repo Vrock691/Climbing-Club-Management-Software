@@ -43,14 +43,14 @@ public class PublicController {
 
         model.addAttribute("pageSorties", outingService.findOutingByCategory(category.get(), pageable));
         model.addAttribute("categorie", categoryService.findCategoryById(id));
-        return "outingScreen";
+        return "outingsScreen";
     }
 
     // Vue détaillée d'une sortie
     @GetMapping("/outings/{id}")
     public String detailSortie(@PathVariable Long id, Model model) {
         model.addAttribute("sortie", outingService.findOutingById(id));
-        return "outingDetailScreen";
+        return "outingDetailsScreen";
     }
 
     // Recherche multi-critères

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/auth")
 @RequiredArgsConstructor()
 public class AuthController {
 
@@ -68,6 +67,6 @@ public class AuthController {
             model.addAttribute("error", "Aucun compte n'existe avec cette adresse e-mail.");
         }
 
-        return "password_recovery";
+        return "passwordRecoveryScreen";
     }
 }
