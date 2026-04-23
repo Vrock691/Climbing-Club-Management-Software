@@ -24,6 +24,7 @@ public class CategoriesController {
     private final OutingService outingService;
 
     // TODO: réflechir si un DTO est nécéssaire ou pas, je pense pas perso, ya rien dans l'object category mais bon
+    // TODO: Faire marcher la vue aussi
     @GetMapping
     public String categories(@PageableDefault(size = 20) Pageable pageable, Model model) {
         model.addAttribute("categories", categoryService.getAllCategories(pageable));
