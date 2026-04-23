@@ -26,7 +26,7 @@ public class TestCategoryService {
         Page<Category> categoryList = categoryService.getAllCategories(pageable);
 
         assertEquals(50, categoryList.getTotalElements());
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < categoryList.getNumberOfElements(); i++) {
             Category category = categoryList.getContent().get(i);
             assertNotNull(category);
             assertEquals("category-" + i, category.getName());

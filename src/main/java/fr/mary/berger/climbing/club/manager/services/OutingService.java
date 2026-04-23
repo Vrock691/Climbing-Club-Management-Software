@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OutingService {
 
-    private OutingDAO outingDAO;
+    private final OutingDAO outingDAO;
 
     public Page<Outing> findOutingByCategory(Category category, Pageable pageable) {
         return outingDAO.findOutingsByCategory(category, pageable);

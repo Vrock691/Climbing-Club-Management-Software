@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private MemberDAO memberDAO;
+    private final MemberDAO memberDAO;
 
     public Page<Member> findAllMembers(Pageable pageable) {
         return memberDAO.findAll(pageable);
