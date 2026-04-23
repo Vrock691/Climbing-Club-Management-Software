@@ -20,7 +20,9 @@ public class AuthController {
 
     private final EmailService emailService;
     private final MemberService memberService;
-   // private final PasswordEncoder passwordEncoder;
+
+    // TODO: Implémenter un password encoder
+    // private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {

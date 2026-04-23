@@ -1,0 +1,79 @@
+package fr.mary.berger.climbing.club.manager.security;
+
+import fr.mary.berger.climbing.club.manager.models.Member;
+import fr.mary.berger.climbing.club.manager.models.Outing;
+import fr.mary.berger.climbing.club.manager.services.MemberService;
+import fr.mary.berger.climbing.club.manager.services.OutingService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class TestOutingModificationRightsChecker {
+
+    @InjectMocks
+    private OutingModificationRightsChecker testOutingModificationRightsChecker;
+
+    @Mock
+    private OutingService outingService;
+
+    @Mock
+    private MemberService memberService;
+
+    private Outing outing;
+    private Member member, member2;
+
+    @BeforeEach
+    public void setUp() {
+
+        member = new Member();
+        member.setId(1L);
+
+        member2 = new Member();
+        member2.setId(2L);
+
+        outing = new Outing();
+        outing.setId(1L);
+        outing.setOwner(member);
+
+        when(outingService.findOutingById(anyLong())).thenAnswer(iom -> {
+            long id = iom.getArgument(0);
+            if (id == 1) return Optional.of(outing);
+            return Optional.empty();
+        });
+
+        when(memberService.findMemberById(anyLong())).thenAnswer(iom -> {
+            long id = iom.getArgument(0);
+            return switch ((int) id) {
+                case 1 -> Optional.of(member);
+                case 2 -> Optional.of(member2);
+                default -> Optional.empty();
+            };
+        });
+    }
+
+    @Test
+    public void testInvalidArguments() {
+        Assertions.assertThrows(NoSuchElementException.class,
+                () -> testOutingModificationRightsChecker.isModificationPermitted(0L, 1L));
+        Assertions.assertThrows(NoSuchElementException.class,
+                () -> testOutingModificationRightsChecker.isModificationPermitted(1L, 0L));
+    }
+
+    @Test
+    public void testChecker() {
+        Assertions.assertTrue(testOutingModificationRightsChecker.isModificationPermitted(1L, 1L));
+        Assertions.assertFalse(testOutingModificationRightsChecker.isModificationPermitted(2L, 1L));
+    }
+
+}
