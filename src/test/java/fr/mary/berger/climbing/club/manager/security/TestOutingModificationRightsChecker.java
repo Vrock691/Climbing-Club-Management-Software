@@ -66,15 +66,15 @@ public class TestOutingModificationRightsChecker {
     @Test
     public void testInvalidArguments() {
         Assertions.assertThrows(NoSuchElementException.class,
-                () -> testOutingModificationRightsChecker.isModificationPermitted(0L, 1L));
+                () -> testOutingModificationRightsChecker.isModificationPermitted("username999", 1L));
         Assertions.assertThrows(NoSuchElementException.class,
-                () -> testOutingModificationRightsChecker.isModificationPermitted(1L, 0L));
+                () -> testOutingModificationRightsChecker.isModificationPermitted("username1", 0L));
     }
 
     @Test
     public void testChecker() {
-        Assertions.assertTrue(testOutingModificationRightsChecker.isModificationPermitted(1L, 1L));
-        Assertions.assertFalse(testOutingModificationRightsChecker.isModificationPermitted(2L, 1L));
+        Assertions.assertTrue(testOutingModificationRightsChecker.isModificationPermitted("username1", 1L));
+        Assertions.assertFalse(testOutingModificationRightsChecker.isModificationPermitted("username2", 1L));
     }
 
 }
