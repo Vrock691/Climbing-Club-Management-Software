@@ -10,7 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true, securedEnabled = false, jsr250Enabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class SpringSecurity {
 
     /*
@@ -29,31 +29,37 @@ public class SpringSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         String[] anonymousRequests = {
-                "/public/**",
-                "/login",
-                "/forgot-password",
+                "/",
+                "/auth/**",
+                "/home",
+                "/search",
+                "/categories",
+                "/categories/**",
+                "/outings/**",
                 "/css/**",
                 "/js/**",
                 "/images/**"
         };
 
         String[] memberRequests = {
-                "/member/**"
+                "/outings/*/new",
+                "/outings/*/update",
+                "/outings/*/delete"
         };
 
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(anonymousRequests).permitAll()
-                        .requestMatchers(memberRequests).hasRole("MEMBRE")
-                        .anyRequest().authenticated()
+                        .requestMatchers(memberRequests).hasRole("MEMBER")
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")                      // Spring adds /app automatically
-                        .defaultSuccessUrl("/public/categories", true)
+                        .defaultSuccessUrl("/home", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/public/categories")   // Same here
+                        .logoutSuccessUrl("/home")   // Same here
                         .permitAll()
                 );
 
