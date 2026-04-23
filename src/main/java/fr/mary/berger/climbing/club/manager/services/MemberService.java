@@ -50,7 +50,6 @@ public class MemberService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(username));
         return User.withUsername(member.getUsername())
                 .password(member.getEncodedPassword())
-                .authorities(member.getAuthorities().toArray(new String[0]))
                 .disabled(false)
                 .accountExpired(false)
                 .accountLocked(false)

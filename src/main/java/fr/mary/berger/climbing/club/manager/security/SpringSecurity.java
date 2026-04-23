@@ -3,6 +3,7 @@ package fr.mary.berger.climbing.club.manager.security;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.DispatcherType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,8 +14,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -42,7 +41,6 @@ public class SpringSecurity {
         newMember.setFirstName("Mary");
         newMember.setLastName("Valentin");
         newMember.setEmail("valentin.mary@proton.me");
-        newMember.setAuthorities(List.of("MEMBER"));
         newMember.setEncodedPassword(passwordEncoder.encode("VMpassword"));
         memberService.createMember(newMember);
 
@@ -50,7 +48,7 @@ public class SpringSecurity {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) {
 
         String[] anonymousRequests = {
                 "/",
@@ -59,35 +57,41 @@ public class SpringSecurity {
                 "/search",
                 "/categories",
                 "/categories/**",
-                "/outings/**",
+                "/outings/*",
                 "/css/**",
                 "/js/**",
                 "/images/**"
         };
 
-        String[] memberRequests = {
-                "/outings/*/new",
+        String[] authenticatedRequests = {
+                "/outings/new",
                 "/outings/*/update",
                 "/outings/*/delete"
         };
 
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(anonymousRequests).permitAll()
-                        .requestMatchers(memberRequests).hasRole("MEMBER")
-                        .anyRequest().permitAll()
-                )
-                .formLogin(form -> form
-                        .loginPage("/auth/login")
-                        .usernameParameter("username")
-                        .defaultSuccessUrl("/home", true)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/home")
-                        .permitAll()
-                );
+        http.authorizeHttpRequests(config -> {
+            config.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll();
+            config.requestMatchers(anonymousRequests).permitAll();
+            config.requestMatchers(authenticatedRequests).authenticated();
+            config.anyRequest().authenticated();
+        });
 
+        http.formLogin(config -> {
+            config.loginPage("/auth/login");
+            config.usernameParameter("username");
+            config.passwordParameter("password");
+            config.defaultSuccessUrl("/");
+            config.permitAll();
+        });
+
+        http.logout(config -> {
+            config.permitAll();
+            config.logoutSuccessUrl("/");
+        });
+
+        http.csrf(config -> {
+            config.ignoringRequestMatchers(anonymousRequests);
+        });
         return http.build();
     }
 }

@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.util.Date;
 
 @Entity
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 public class PasswordRecoveryToken {
     private static final int EXPIRATION = 60 * 24;

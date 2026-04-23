@@ -18,7 +18,4 @@ public class Member {
     private String email;
 
     private String encodedPassword;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    Collection<String> authorities;
 }
