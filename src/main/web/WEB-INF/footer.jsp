@@ -5,7 +5,7 @@
                 <span class="text-muted">© 2026 Club d'Escalade - Projet JEE</span>
             </div>
             <div class="col-md-6 text-md-end">
-                <span class="small">Technologie : Spring Boot, JPA, Spring Security</span>
+                <span class="small"><strong>MARY</strong> Valentin, <strong>BERGER</strong> Maxime</span>
             </div>
         </div>
     </div>
@@ -14,7 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Activation des tooltips Bootstrap
+
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
