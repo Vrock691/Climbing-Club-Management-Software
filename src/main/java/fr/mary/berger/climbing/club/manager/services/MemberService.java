@@ -44,6 +44,11 @@ public class MemberService implements UserDetailsService {
         return memberDAO.findMemberByEmail(email);
     }
 
+    public void changePassword(Member member, String newEncodedPassword) {
+        member.setEncodedPassword(newEncodedPassword);
+        memberDAO.save(member);
+    }
+
     @Override
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
         Member member = memberDAO.findMemberByUsername(username)//

@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface PasswordRecoveryTokenDAO extends JpaRepository<PasswordRecoveryToken, Long> {
-    Optional<PasswordRecoveryToken> findPasswordRecoveryTokenByTokenAndMember(String token, Member member);
+    Optional<PasswordRecoveryToken> findByToken(String token);
 }

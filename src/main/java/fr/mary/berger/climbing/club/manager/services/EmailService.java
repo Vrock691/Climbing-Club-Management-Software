@@ -14,7 +14,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
 
     public void sendPasswordRecoveryEmail(String contextPath, String recipient, String token) {
-        String url = contextPath + "/user/changePassword?token=" + token;
+        String url = contextPath + "/auth/change-password?token=" + token;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("ne-pas-repondre@club-escalade.fr");
         message.setTo(recipient);
@@ -24,6 +24,6 @@ public class EmailService {
                 + "Veuillez cliquer sur ce lien pour le changer : " + url + "\n"
                 + "Sportivement,\nL'équipe du Club.");
         mailSender.send(message);
-        log.info("Email sent to " + recipient);
+        log.info("Email sent to " + recipient + ", with link : " + url);
     }
 }

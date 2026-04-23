@@ -1,22 +1,23 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
+import fr.mary.berger.climbing.club.manager.dto.password.ChangePasswordRequestDTO;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.EmailService;
 import fr.mary.berger.climbing.club.manager.services.PasswordRecoveryTokenService;
 import fr.mary.berger.climbing.club.manager.utils.UrlConfig;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor()
@@ -26,9 +27,7 @@ public class AuthController {
     private final MemberService memberService;
     private final PasswordRecoveryTokenService passwordRecoveryTokenService;
     private final UrlConfig urlConfig;
-
-    // TODO: Implémenter un password encoder
-    // private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {
@@ -41,7 +40,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public String traiterRecuperation(@RequestParam("email") String email, Model model) {
+    public String requestRecovery(@RequestParam("email") String email, Model model) {
         Optional<Member> member = memberService.findMemberByEmail(email);
         if (member.isPresent()) {
             Member membre = member.get();
@@ -79,23 +78,41 @@ public class AuthController {
         return "changePassword";
     }
 
-    @PostMapping("/change-password")
+    @PostMapping(value = "/change-password", consumes = "application/x-www-form-urlencoded")
     public String changePasswordWithToken(
-            Principal principal,
             @RequestParam("token") String token,
-            @RequestParam("password") String password)
-    {
+            @RequestParam("password") String password,
+            Model model) {
+
         if (token == null || token.isBlank()) {
-            return "redirect:/auth/forgot-password";
+            model.addAttribute("error", "Lien de réinitialisation invalide.");
+            return "forgotPassword";
         }
 
-        // TODO: Implémenter une meilleure logique de gestion de mot de passe
         if (password == null || password.isBlank()) {
-            return "redirect:/auth/forgot-password";
+            model.addAttribute("error", "Le mot de passe ne peut pas être vide.");
+            model.addAttribute("token", token);
+            return "changePassword";
         }
 
-        // TODO/ Implémenter le changement de mot de passe
+        // Chercher le member associé au token
+        Optional<Member> member = passwordRecoveryTokenService.findMemberByToken(token);
+        if (member.isEmpty()) {
+            model.addAttribute("error", "Lien de réinitialisation invalide ou expiré.");
+            return "forgotPassword";
+        }
+        Member memberFound = member.get();
 
+        // Vérifier et mettre à jour en conséquence
+        if (!passwordRecoveryTokenService.checkPasswordResetToken(memberFound, token)) {
+            model.addAttribute("error", "Lien de réinitialisation expiré.");
+            return "forgotPassword";
+        }
+        String encodedPassword = passwordEncoder.encode(password);
+        memberService.changePassword(memberFound, encodedPassword);
+        passwordRecoveryTokenService.deletePasswordRecoveryToken(memberFound, token);
+
+        model.addAttribute("message", "Mot de passe modifié");
         return "redirect:/auth/login";
     }
 }

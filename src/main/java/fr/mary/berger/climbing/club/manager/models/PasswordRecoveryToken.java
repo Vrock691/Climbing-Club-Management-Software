@@ -11,7 +11,7 @@ import java.util.Date;
 @Getter @Setter
 @NoArgsConstructor
 public class PasswordRecoveryToken {
-    private static final int EXPIRATION = 60 * 24;
+    private static final long EXPIRATION = 60 * 60 * 1000; // 60 minutes en millisecondes
 
     public PasswordRecoveryToken(
             Member member,
@@ -23,6 +23,7 @@ public class PasswordRecoveryToken {
     }
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String token;

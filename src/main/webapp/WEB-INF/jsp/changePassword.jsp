@@ -18,6 +18,7 @@
 
                     <form action="<c:url value='/auth/change-password'/>" method="post">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                        <input type="hidden" name="token" value="${token}"/>
                         <div class="mb-3">
                             <label for="password" class="form-label">Nouveau mot de passe</label>
                             <input id="password" name="password" type="password" class="form-control">

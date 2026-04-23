@@ -21,19 +21,23 @@ public class PasswordRecoveryTokenService {
     }
 
     public boolean checkPasswordResetToken(Member member, String token) {
-        Optional<PasswordRecoveryToken> recordedToken = passwordRecoveryTokenDAO.findPasswordRecoveryTokenByTokenAndMember(token, member);
+        Optional<PasswordRecoveryToken> recordedToken = passwordRecoveryTokenDAO.findByToken(token);
         if (recordedToken.isPresent()) {
             PasswordRecoveryToken passwordRecoveryToken = recordedToken.get();
-            if (passwordRecoveryToken.getToken().equals(token) && passwordRecoveryToken.getExpiryDate().after(new Date())) {
-                return true;
-            }
+            if (!member.equals(passwordRecoveryToken.getMember())) return false;
+            return passwordRecoveryToken.getToken().equals(token) && passwordRecoveryToken.getExpiryDate().after(new Date());
         }
         return false;
     }
 
     public void deletePasswordRecoveryToken(Member member, String token) {
-        Optional<PasswordRecoveryToken> recordedToken = passwordRecoveryTokenDAO.findPasswordRecoveryTokenByTokenAndMember(token, member);
+        Optional<PasswordRecoveryToken> recordedToken = passwordRecoveryTokenDAO.findByToken(token);
         recordedToken.ifPresent(passwordRecoveryTokenDAO::delete);
+    }
+
+    public Optional<Member> findMemberByToken(String token) {
+        Optional<PasswordRecoveryToken> passwordRecoveryToken = passwordRecoveryTokenDAO.findByToken(token);
+        return passwordRecoveryToken.map(PasswordRecoveryToken::getMember);
     }
 
 }
