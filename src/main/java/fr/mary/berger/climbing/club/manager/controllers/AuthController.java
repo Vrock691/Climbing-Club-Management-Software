@@ -1,18 +1,26 @@
-package fr.mary.berger.climbing.club.manager.web;
+package fr.mary.berger.climbing.club.manager.controllers;
 
 import fr.mary.berger.climbing.club.manager.models.Member;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import fr.mary.berger.climbing.club.manager.services.MemberService;
+import fr.mary.berger.climbing.club.manager.services.EmailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/auth")
+@RequiredArgsConstructor()
 public class AuthController {
+
+    private final EmailService emailService;
+    private final MemberService memberService;
+   // private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {
@@ -21,7 +29,7 @@ public class AuthController {
 
     @GetMapping("/forgot-password")
     public String showForgotForm() {
-        return "password_recovery";
+        return "passwordRecoveryScreen";
     }
 
     @PostMapping("/forgot-password")
@@ -31,21 +39,13 @@ public class AuthController {
         } catch (Exception e) {
             model.addAttribute("error", "Erreur lors de l'envoi.");
         }
-        return "password_recovery";
+        return "passwordRecoveryScreen";
     }
 
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private Member membreService; // en attente d'implementation
-
-    @Autowired
-    private PasswordEncoder passwordEncoder; // en attente d'implementation
-
-    @PostMapping("/forgot-password")
+    // TODO: Renommer la route
+    @PostMapping("/forgot-password2")
     public String traiterRecuperation(@RequestParam("email") String email, Model model) {
-        Optional<Member> membreOpt = membreService.trouverParEmail(email);  // utilisation méthode générique todo : adapter
+        Optional<Member> membreOpt = memberService.findMemberByEmail(email);  // utilisation méthode générique todo : adapter
 
         if (membreOpt.isPresent()) {
             Member membre = membreOpt.get();
@@ -54,8 +54,8 @@ public class AuthController {
             String mdpTemporaire = "Escalade-" + (int)(Math.random() * 10000);
 
             // Mise à jour du membre sur la bdd
-            membre.setPassword(passwordEncoder.encode(mdpTemporaire));
-            membreService.sauvegarder(membre);                              // utilisation méthode générique todo : adapter
+         //   membre.setPassword(passwordEncoder.encode(mdpTemporaire));
+         //   membreService.sauvegarder(membre);                              // utilisation méthode générique todo : adapter
 
             // Envoie du mail
             try {

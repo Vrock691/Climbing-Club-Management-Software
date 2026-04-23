@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.web;
+package fr.mary.berger.climbing.club.manager.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

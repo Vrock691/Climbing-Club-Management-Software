@@ -35,4 +35,7 @@ public class MemberService {
         memberDAO.save(member);
     }
 
+    public Optional<Member> findMemberByEmail(String email) {
+        return memberDAO.findMemberByEmail(email);
+    }
 }

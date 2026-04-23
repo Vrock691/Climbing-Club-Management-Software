@@ -1,7 +1,5 @@
-package fr.mary.berger.climbing.club.manager.web_security;
+package fr.mary.berger.climbing.club.manager.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

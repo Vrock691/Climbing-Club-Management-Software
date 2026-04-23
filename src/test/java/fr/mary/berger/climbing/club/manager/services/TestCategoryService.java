@@ -56,7 +56,7 @@ public class TestCategoryService {
         Page<Category> categoryList = categoryService.getAllCategories(pageable);
         long categoryCount = categoryList.getTotalElements();
 
-        Optional<Category> category = categoryService.getCategoryById(1);
+        Optional<Category> category = categoryService.findCategoryById(1);
         assertTrue(category.isPresent());
 
         Category updatedCategory = category.get();

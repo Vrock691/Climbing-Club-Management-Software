@@ -1,7 +1,8 @@
-package fr.mary.berger.climbing.club.manager.web;
+package fr.mary.berger.climbing.club.manager.controllers;
 
 import fr.mary.berger.climbing.club.manager.models.Outing;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.mary.berger.climbing.club.manager.services.OutingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,21 +11,19 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 @Controller
-@RequestMapping("/member")
+@RequestMapping("/myprofile")
+@RequiredArgsConstructor
 public class MemberController {
 
-    @Autowired
-    private Outing outingService; // en attente d'implementation
+    private final OutingService outingService;
 
-    // Formulaire de création
-    @GetMapping("/sortie/new")
+    @GetMapping("/outings/new")
     public String showCreateForm(Model model) {
-        model.addAttribute("sortie", new Outing());
+        model.addAttribute("sortie", new Outing()); // Pourquoi tu transmets un object vide ?
         return "form_sortie";
     }
 
-    // Enregistrement (Création ou Modification)
-    @PostMapping("/sortie/save")
+    @PostMapping("/outings/new")
     public String saveSortie(@ModelAttribute("sortie") Outing sortie,
                              BindingResult result,
                              Principal principal) { // --> Obj injecté par spring qui représente l'utilisateur connecté
@@ -33,15 +32,15 @@ public class MemberController {
         }
 
         String email = principal.getName();
-        outingService.save(sortie, email); // utilisation méthode générique todo : adapter
+       // outingService.save(sortie, email); // utilisation méthode générique todo : adapter
         
         return "redirect:/public/categories";
     }
 
     // Suppression sécurisée
-    @GetMapping("/sortie/delete/{id}")
+    @GetMapping("/outings/delete/{id}")
     public String deleteSortie(@PathVariable Long id, Principal principal) {
-        outingService.delete(id, principal.getName()); // utilisation méthode générique todo : adapter
+       // outingService.delete(id, principal.getName()); // utilisation méthode générique todo : adapter
         return "redirect:/public/categories";
     }
 }

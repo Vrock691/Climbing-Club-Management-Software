@@ -23,7 +23,7 @@ public class CategoryService {
         categoryDAO.save(category);
     }
 
-    public Optional<Category> getCategoryById(long id) {
+    public Optional<Category> findCategoryById(long id) {
         return categoryDAO.findById(id);
     }
 
