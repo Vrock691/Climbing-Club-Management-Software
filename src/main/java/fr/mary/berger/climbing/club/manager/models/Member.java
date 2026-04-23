@@ -3,12 +3,13 @@ package fr.mary.berger.climbing.club.manager.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Collection;
+
 @Entity
 @Getter @Setter
 public class Member {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    private Long id;
+    private String username;
 
     private String firstName;
 
@@ -16,5 +17,8 @@ public class Member {
 
     private String email;
 
-    private String password;
+    private String encodedPassword;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    Collection<String> authorities;
 }

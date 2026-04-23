@@ -16,6 +16,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,10 +38,10 @@ public class TestOutingModificationRightsChecker {
     public void setUp() {
 
         member = new Member();
-        member.setId(1L);
+        member.setUsername("username1");
 
         member2 = new Member();
-        member2.setId(2L);
+        member2.setUsername("username2");
 
         outing = new Outing();
         outing.setId(1L);
@@ -52,11 +53,11 @@ public class TestOutingModificationRightsChecker {
             return Optional.empty();
         });
 
-        when(memberService.findMemberById(anyLong())).thenAnswer(iom -> {
-            long id = iom.getArgument(0);
-            return switch ((int) id) {
-                case 1 -> Optional.of(member);
-                case 2 -> Optional.of(member2);
+        when(memberService.findMemberByUsername(anyString())).thenAnswer(iom -> {
+            String id = iom.getArgument(0);
+            return switch (id) {
+                case "username1" -> Optional.of(member);
+                case "username2" -> Optional.of(member2);
                 default -> Optional.empty();
             };
         });

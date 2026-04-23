@@ -3,15 +3,20 @@ package fr.mary.berger.climbing.club.manager.services;
 import fr.mary.berger.climbing.club.manager.dao.MemberDAO;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberService implements UserDetailsService {
 
     private final MemberDAO memberDAO;
 
@@ -19,8 +24,8 @@ public class MemberService {
         return memberDAO.findAll(pageable);
     }
 
-    public Optional<Member> findMemberById(Long id) {
-        return memberDAO.findById(id);
+    public Optional<Member> findMemberByUsername(String username) {
+        return memberDAO.findMemberByUsername(username);
     }
 
     public void createMember(Member member) {
@@ -37,5 +42,19 @@ public class MemberService {
 
     public Optional<Member> findMemberByEmail(String email) {
         return memberDAO.findMemberByEmail(email);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+        Member member = memberDAO.findMemberByUsername(username)//
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        return User.withUsername(member.getUsername())
+                .password(member.getEncodedPassword())
+                .authorities(member.getAuthorities().toArray(new String[0]))
+                .disabled(false)
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .build();
     }
 }

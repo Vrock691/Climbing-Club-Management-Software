@@ -28,7 +28,7 @@ public class TestMemberService {
         for (int i = 0; i < memberList.getNumberOfElements(); i++) {
             Member member = memberList.getContent().get(i);
             assertNotNull(member);
-            assertEquals("member-" + i, member.getFirstName());
+            assertEquals("member-" + i, member.getUsername());
         }
     }
 

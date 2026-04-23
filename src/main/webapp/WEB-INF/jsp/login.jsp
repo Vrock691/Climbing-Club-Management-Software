@@ -27,8 +27,8 @@
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
                         <div class="form-floating mb-3">
-                            <input type="email" name="username" class="form-control" id="floatingInput" placeholder="nom@exemple.com" required>
-                            <label for="floatingInput">Adresse Email</label>
+                            <input type="text" name="username" class="form-control" id="floatingInput" placeholder="Identifiant" required>
+                            <label for="floatingInput">Identifiant</label>
                         </div>
 
                         <div class="form-floating mb-4">
@@ -46,9 +46,6 @@
                     <div class="text-center">
                         <p class="mb-1">
                             <a href="<c:url value='/auth/forgot-password'/>" class="text-decoration-none text-secondary small">Mot de passe oublié ?</a>
-                        </p>
-                        <p class="mb-0">
-                            <span class="small text-muted">Créer un compte.</span>
                         </p>
                     </div>
                 </div>

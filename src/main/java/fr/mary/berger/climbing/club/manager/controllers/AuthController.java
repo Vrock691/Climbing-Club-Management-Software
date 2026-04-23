@@ -3,6 +3,8 @@ package fr.mary.berger.climbing.club.manager.controllers;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.EmailService;
+import fr.mary.berger.climbing.club.manager.services.PasswordRecoveryTokenService;
+import fr.mary.berger.climbing.club.manager.utils.UrlConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.security.Principal;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/auth")
@@ -20,6 +24,8 @@ public class AuthController {
 
     private final EmailService emailService;
     private final MemberService memberService;
+    private final PasswordRecoveryTokenService passwordRecoveryTokenService;
+    private final UrlConfig urlConfig;
 
     // TODO: Implémenter un password encoder
     // private final PasswordEncoder passwordEncoder;
@@ -31,34 +37,65 @@ public class AuthController {
 
     @GetMapping("/forgot-password")
     public String showForgotForm() {
-        return "passwordRecoveryScreen";
+        return "forgotPassword";
     }
 
     @PostMapping("/forgot-password")
     public String traiterRecuperation(@RequestParam("email") String email, Model model) {
-        Optional<Member> membreOpt = memberService.findMemberByEmail(email);  // utilisation méthode générique todo : adapter
+        Optional<Member> member = memberService.findMemberByEmail(email);
+        if (member.isPresent()) {
+            Member membre = member.get();
 
-        if (membreOpt.isPresent()) {
-            Member membre = membreOpt.get();
-
-            // Génération mdp temporaire
-            String mdpTemporaire = "Escalade-" + (int)(Math.random() * 10000);
-
-            // Mise à jour du membre sur la bdd
-            //   membre.setPassword(passwordEncoder.encode(mdpTemporaire));
-            //   membreService.sauvegarder(membre);                              // utilisation méthode générique todo : adapter
+            // Génération d'un token de réinitialisation
+            String token = UUID.randomUUID().toString();
+            passwordRecoveryTokenService.createPasswordResetTokenForMember(membre, token);
 
             // Envoie du mail
             try {
-                emailService.envoyerMailRecuperation(email, mdpTemporaire);
-                model.addAttribute("success", "Un e-mail contenant votre nouveau mot de passe a été envoyé.");
+                emailService.sendPasswordRecoveryEmail(urlConfig.getBaseUrl(), email, token);
+                model.addAttribute("message", "Un e-mail contenant un lien a été envoyé si le compte existe.");
             } catch (Exception e) {
                 model.addAttribute("error", "Erreur lors de l'envoi de l'e-mail.");
             }
         } else {
-            model.addAttribute("error", "Aucun compte n'existe avec cette adresse e-mail.");
+            model.addAttribute("message", "Un e-mail contenant un lien a été envoyé si le compte existe.");
         }
 
-        return "passwordRecoveryScreen";
+        return "forgotPassword";
+    }
+
+    @GetMapping("/change-password")
+    public String showChangePasswordPage(Model model, Principal principal, @RequestParam("token") String token) {
+        if (principal != null) {
+            return "redirect:/";
+        }
+
+        if (token == null || token.isBlank()) {
+            model.addAttribute("error", "Lien de réinitialisation invalide.");
+            return "forgotPassword";
+        }
+
+        model.addAttribute("token", token);
+        return "changePassword";
+    }
+
+    @PostMapping("/change-password")
+    public String changePasswordWithToken(
+            Principal principal,
+            @RequestParam("token") String token,
+            @RequestParam("password") String password)
+    {
+        if (token == null || token.isBlank()) {
+            return "redirect:/auth/forgot-password";
+        }
+
+        // TODO: Implémenter une meilleure logique de gestion de mot de passe
+        if (password == null || password.isBlank()) {
+            return "redirect:/auth/forgot-password";
+        }
+
+        // TODO/ Implémenter le changement de mot de passe
+
+        return "redirect:/auth/login";
     }
 }

@@ -32,8 +32,8 @@ public class OutingService {
         return outingDAO.findAll(spec, pageable);
     }
 
-    public Page<Outing> findByOwnerId(Long ownerId, Pageable pageable) {
-        return outingDAO.findByOwner_Id(ownerId, pageable);
+    public Page<Outing> findByOwnerUsername(String ownerUsername, Pageable pageable) {
+        return outingDAO.findByOwner_Username(ownerUsername, pageable);
     }
 
     public void createOuting(Outing outing) {
