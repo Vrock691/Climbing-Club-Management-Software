@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.dao;
+package fr.mary.berger.climbing.club.manager.services;
 
 import org.springframework.boot.test.context.SpringBootTest;
 

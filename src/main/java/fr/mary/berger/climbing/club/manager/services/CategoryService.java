@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CategoryService {
 
-    CategoryDAO categoryDAO;
+    private final CategoryDAO categoryDAO;
 
     public Page<Category> getAllCategories(Pageable pageable) {
         return categoryDAO.findAll(pageable);

@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class OutingService {
@@ -18,16 +20,32 @@ public class OutingService {
     private OutingDAO outingDAO;
 
     public Page<Outing> findOutingByCategory(Category category, Pageable pageable) {
-        return outingDAO.findOutingByCategory(category, pageable);
+        return outingDAO.findOutingsByCategory(category, pageable);
     }
 
-    public Outing findOutingById(Long id) {
-        return outingDAO.findOutingById(id);
+    public Optional<Outing> findOutingById(Long id) {
+        return outingDAO.findById(id);
     }
 
     public Page<Outing> searchOuting(OutingSearchCriteria outingSearchCriteria, Pageable pageable) {
         Specification<Outing> spec = OutingSpecification.withCriteria(outingSearchCriteria);
         return outingDAO.findAll(spec, pageable);
+    }
+
+    public Page<Outing> findByOwnerId(Long ownerId, Pageable pageable) {
+        return outingDAO.findByOwner_Id(ownerId, pageable);
+    }
+
+    public void createOuting(Outing outing) {
+        outingDAO.save(outing);
+    }
+
+    public void deleteOuting(Long id) {
+        outingDAO.deleteById(id);
+    }
+
+    public void updateOuting(Outing outing) {
+        outingDAO.save(outing);
     }
 
 }

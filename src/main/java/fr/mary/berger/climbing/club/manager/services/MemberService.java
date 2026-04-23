@@ -7,20 +7,32 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
-    MemberDAO memberDAO;
+    private MemberDAO memberDAO;
 
-    Page<Member> findAllMembers(Pageable pageable) {
+    public Page<Member> findAllMembers(Pageable pageable) {
         return memberDAO.findAll(pageable);
     }
 
-    Member findMemberById(Long id) {
-        return memberDAO.findMemberById(id);
+    public Optional<Member> findMemberById(Long id) {
+        return memberDAO.findById(id);
     }
 
+    public void createMember(Member member) {
+        memberDAO.save(member);
+    }
 
+    public void deleteMember(Member member) {
+        memberDAO.delete(member);
+    }
+
+    public void updateMember(Member member) {
+        memberDAO.save(member);
+    }
 
 }
