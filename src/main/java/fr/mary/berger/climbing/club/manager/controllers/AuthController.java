@@ -1,18 +1,23 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
+import fr.mary.berger.climbing.club.manager.dto.password.ChangePasswordRequestDTO;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.EmailService;
+import fr.mary.berger.climbing.club.manager.services.PasswordRecoveryTokenService;
+import fr.mary.berger.climbing.club.manager.utils.UrlConfig;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor()
@@ -20,9 +25,9 @@ public class AuthController {
 
     private final EmailService emailService;
     private final MemberService memberService;
-
-    // TODO: Implémenter un password encoder
-    // private final PasswordEncoder passwordEncoder;
+    private final PasswordRecoveryTokenService passwordRecoveryTokenService;
+    private final UrlConfig urlConfig;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {
@@ -31,34 +36,83 @@ public class AuthController {
 
     @GetMapping("/forgot-password")
     public String showForgotForm() {
-        return "passwordRecoveryScreen";
+        return "forgotPassword";
     }
 
     @PostMapping("/forgot-password")
-    public String traiterRecuperation(@RequestParam("email") String email, Model model) {
-        Optional<Member> membreOpt = memberService.findMemberByEmail(email);  // utilisation méthode générique todo : adapter
+    public String requestRecovery(@RequestParam("email") String email, Model model) {
+        Optional<Member> member = memberService.findMemberByEmail(email);
+        if (member.isPresent()) {
+            Member membre = member.get();
 
-        if (membreOpt.isPresent()) {
-            Member membre = membreOpt.get();
-
-            // Génération mdp temporaire
-            String mdpTemporaire = "Escalade-" + (int)(Math.random() * 10000);
-
-            // Mise à jour du membre sur la bdd
-            //   membre.setPassword(passwordEncoder.encode(mdpTemporaire));
-            //   membreService.sauvegarder(membre);                              // utilisation méthode générique todo : adapter
+            // Génération d'un token de réinitialisation
+            String token = UUID.randomUUID().toString();
+            passwordRecoveryTokenService.createPasswordResetTokenForMember(membre, token);
 
             // Envoie du mail
             try {
-                emailService.envoyerMailRecuperation(email, mdpTemporaire);
-                model.addAttribute("success", "Un e-mail contenant votre nouveau mot de passe a été envoyé.");
+                emailService.sendPasswordRecoveryEmail(urlConfig.getBaseUrl(), email, token);
+                model.addAttribute("message", "Un e-mail contenant un lien a été envoyé si le compte existe.");
             } catch (Exception e) {
                 model.addAttribute("error", "Erreur lors de l'envoi de l'e-mail.");
             }
         } else {
-            model.addAttribute("error", "Aucun compte n'existe avec cette adresse e-mail.");
+            model.addAttribute("message", "Un e-mail contenant un lien a été envoyé si le compte existe.");
         }
 
-        return "passwordRecoveryScreen";
+        return "forgotPassword";
+    }
+
+    @GetMapping("/change-password")
+    public String showChangePasswordPage(Model model, Principal principal, @RequestParam("token") String token) {
+        if (principal != null) {
+            return "redirect:/";
+        }
+
+        if (token == null || token.isBlank()) {
+            model.addAttribute("error", "Lien de réinitialisation invalide.");
+            return "forgotPassword";
+        }
+
+        model.addAttribute("token", token);
+        return "changePassword";
+    }
+
+    @PostMapping(value = "/change-password", consumes = "application/x-www-form-urlencoded")
+    public String changePasswordWithToken(
+            @RequestParam("token") String token,
+            @RequestParam("password") String password,
+            Model model) {
+
+        if (token == null || token.isBlank()) {
+            model.addAttribute("error", "Lien de réinitialisation invalide.");
+            return "forgotPassword";
+        }
+
+        if (password == null || password.isBlank()) {
+            model.addAttribute("error", "Le mot de passe ne peut pas être vide.");
+            model.addAttribute("token", token);
+            return "changePassword";
+        }
+
+        // Chercher le member associé au token
+        Optional<Member> member = passwordRecoveryTokenService.findMemberByToken(token);
+        if (member.isEmpty()) {
+            model.addAttribute("error", "Lien de réinitialisation invalide ou expiré.");
+            return "forgotPassword";
+        }
+        Member memberFound = member.get();
+
+        // Vérifier et mettre à jour en conséquence
+        if (!passwordRecoveryTokenService.checkPasswordResetToken(memberFound, token)) {
+            model.addAttribute("error", "Lien de réinitialisation expiré.");
+            return "forgotPassword";
+        }
+        String encodedPassword = passwordEncoder.encode(password);
+        memberService.changePassword(memberFound, encodedPassword);
+        passwordRecoveryTokenService.deletePasswordRecoveryToken(memberFound, token);
+
+        model.addAttribute("message", "Mot de passe modifié");
+        return "redirect:/auth/login";
     }
 }

@@ -28,6 +28,11 @@ public class TestDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        log.info("Removing old data");
+        categoryDAO.deleteAll();
+        memberDAO.deleteAll();
+        outingDAO.deleteAll();
+
         log.info("Initializing test data...");
 
         // Categories
@@ -43,6 +48,7 @@ public class TestDataInitializer implements CommandLineRunner {
         List<Member> members = new ArrayList<>();
         for (int i = 0; i < 200; i++) {
             Member newMember = new Member();
+            newMember.setUsername("member-" + i);
             newMember.setFirstName("member-" + i);
             newMember.setLastName("member-" + i);
             newMember.setEmail("member-" + i + "@test.com");

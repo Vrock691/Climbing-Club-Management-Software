@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface OutingDAO extends JpaRepository<Outing, Long>, JpaSpecificationExecutor<Outing> {
     Page<Outing> findOutingsByCategory(Category category, Pageable pageable);
 
-    Page<Outing> findByOwner_Id(Long ownerId, Pageable pageable);
+    Page<Outing> findByOwner_Username(String ownerUsername, Pageable pageable);
 }

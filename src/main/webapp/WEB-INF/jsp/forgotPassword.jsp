@@ -12,15 +12,11 @@
                     <c:if test="${not empty message}">
                         <div class="alert alert-success">${message}</div>
                     </c:if>
-                    <c:if test="${not empty success}">
-                        <div class="alert alert-success">${success}</div>
-                    </c:if>
                     <c:if test="${not empty error}">
                         <div class="alert alert-danger">${error}</div>
                     </c:if>
 
                     <form action="<c:url value='/auth/forgot-password'/>" method="post">
-                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <div class="mb-3">
                             <label for="email" class="form-label">Adresse email</label>
                             <input id="email" name="email" type="email" class="form-control" required>

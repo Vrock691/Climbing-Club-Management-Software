@@ -14,7 +14,7 @@ public class Outing {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_username")
     private Member owner;
 
     @ManyToOne

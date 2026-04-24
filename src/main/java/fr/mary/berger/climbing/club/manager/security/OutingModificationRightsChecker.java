@@ -18,14 +18,14 @@ public class OutingModificationRightsChecker {
     private final MemberService memberService;
 
     // La modification ou la suppression d'une sortie est permise uniquement à son organisateur
-    public boolean isModificationPermitted(long memberId, long outingId) {
-        Optional<Member> member = memberService.findMemberById(memberId);
-        if (member.isEmpty()) throw new NoSuchElementException("Member with id " + memberId + " not found");
+    public boolean isModificationPermitted(String username, long outingId) {
+        Optional<Member> member = memberService.findMemberByUsername(username);
+        if (member.isEmpty()) throw new NoSuchElementException("Member with id " + username + " not found");
 
         Optional<Outing> outing = outingService.findOutingById(outingId);
         if (outing.isEmpty()) throw new NoSuchElementException("Outing with id " + outingId + " not found");
 
-        return outing.get().getOwner().getId().equals(member.get().getId());
+        return outing.get().getOwner().getUsername().equals(member.get().getUsername());
     }
 
 }
