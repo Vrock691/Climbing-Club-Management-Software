@@ -61,7 +61,9 @@ public class SpringSecurity {
                 "/outings/*",
                 "/css/**",
                 "/js/**",
-                "/images/**"
+                "/images/**",
+                "/error",
+                "/error/**"
         };
 
         String[] authenticatedRequests = {
