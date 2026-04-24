@@ -27,7 +27,7 @@ public class OutingsController {
 
     @GetMapping("/new")
     public String showCreateOutingForm(Model model) {
-        return "form_outing";
+        return "newOutingFormScreen";
     }
 
     // TODO: Créer deux DTO pour la requete et la réponse et créer l'objet Outing localement, puis rediriger avec un message de succès ou d'erreur
@@ -36,7 +36,7 @@ public class OutingsController {
                                BindingResult result,
                                Principal principal) { // --> Obj injecté par spring qui représente l'utilisateur connecté
         if (result.hasErrors()) {
-            return "form_outing";
+            return "newOutingFormScreen";
         }
 
         String email = principal.getName();
@@ -48,7 +48,7 @@ public class OutingsController {
     // TODO: faire la page jsp de modification (qui peut etre la même que celle de proposition mais en passant par un DTO)
     @GetMapping("/{id}/update")
     public String showUpdateOutingForm(Model model, @PathVariable String id) {
-        return "form_outing";
+        return "newOutingFormScreen";
     }
 
     // TODO: implémenter

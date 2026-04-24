@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.dto;
+package fr.mary.berger.climbing.club.manager.dto.outings;
 
 import java.util.Date;
 import java.util.List;

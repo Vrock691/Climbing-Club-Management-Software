@@ -30,4 +30,8 @@ public class CategoryService {
     public void updateCategory(Category updatedCategory) {
         categoryDAO.save(updatedCategory);
     }
+
+    public Page<Category> findCategoryByNamePattern(String categoryNameQuery, Pageable pageable) {
+        return categoryDAO.findCategoriesByNameContaining(categoryNameQuery, pageable);
+    }
 }

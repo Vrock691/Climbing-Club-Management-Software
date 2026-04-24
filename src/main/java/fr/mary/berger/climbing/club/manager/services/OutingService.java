@@ -1,7 +1,7 @@
 package fr.mary.berger.climbing.club.manager.services;
 
 import fr.mary.berger.climbing.club.manager.dao.OutingDAO;
-import fr.mary.berger.climbing.club.manager.dto.OutingSearchCriteria;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingSearchCriteria;
 import fr.mary.berger.climbing.club.manager.models.Category;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.specifications.OutingSpecification;

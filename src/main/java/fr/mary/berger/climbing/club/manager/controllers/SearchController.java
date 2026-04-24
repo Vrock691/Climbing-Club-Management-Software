@@ -1,6 +1,6 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
-import fr.mary.berger.climbing.club.manager.dto.OutingSearchCriteria;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingSearchCriteria;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class SearchController {
     private final OutingService outingService;
 
     @GetMapping
-    public String showSearchForm(Principal principal, Model model) {
+    public String showSearchForm(Model model) {
         return "searchForm";
     }
 
@@ -49,7 +48,7 @@ public class SearchController {
 
         // TODO: Créer un DTO pour le modèle, ne pas renvoyer les informations directement sortie du service
         model.addAttribute("pageSorties", outingService.searchOuting(outingSearchCriteria, pageable)); // utilisation méthode générique todo : adapter
-        return "outingsScreen";
+        return "outingListScreen";
     }
 
 }

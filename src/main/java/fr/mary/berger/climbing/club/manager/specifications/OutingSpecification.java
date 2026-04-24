@@ -1,6 +1,6 @@
 package fr.mary.berger.climbing.club.manager.specifications;
 
-import fr.mary.berger.climbing.club.manager.dto.OutingSearchCriteria;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingSearchCriteria;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
