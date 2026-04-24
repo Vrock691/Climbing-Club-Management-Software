@@ -1,6 +1,7 @@
 package fr.mary.berger.climbing.club.manager.services;
 
 import fr.mary.berger.climbing.club.manager.models.Member;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 public class TestMemberService {
 
     @Autowired
