@@ -1,11 +1,9 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
 import fr.mary.berger.climbing.club.manager.dto.PaginatedResponse;
-import fr.mary.berger.climbing.club.manager.dto.categories.CategoriesResponseDTO;
 import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
-import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingDTO;
-import fr.mary.berger.climbing.club.manager.dto.outings.OutingsResponseDTO;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingsListResponseDTO;
 import fr.mary.berger.climbing.club.manager.models.Category;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.services.CategoryService;
@@ -15,9 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,7 +59,7 @@ public class CategoriesController {
         Optional<Category> category = categoryService.findCategoryById(id);
         if (category.isEmpty()) {
             String error = "Catégorie inexistante";
-            OutingsResponseDTO response = new OutingsResponseDTO(null, error);
+            OutingsListResponseDTO response = new OutingsListResponseDTO(null, error);
             return new ModelAndView("outingListScreen", "paginatedResponse", response);
         }
 
@@ -88,7 +84,7 @@ public class CategoriesController {
                 results.isFirst(),
                 results.isLast()
         );
-        OutingsResponseDTO response = new OutingsResponseDTO(paginatedResponse, null);
+        OutingsListResponseDTO response = new OutingsListResponseDTO(paginatedResponse, null);
         return new ModelAndView("outingListScreen", "paginatedResponse", response);
     }
 
