@@ -20,6 +20,10 @@
         </div>
     </div>
 
+    <c:if test="${paginatedResponse.error() != null}">
+        <p class="alert alert-warning">${paginatedResponse.error()}</p>
+    </c:if>
+
     <div class="table-responsive shadow-sm rounded">
         <table class="table table-hover bg-white align-middle">
             <thead class="table-light">

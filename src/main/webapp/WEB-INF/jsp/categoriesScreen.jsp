@@ -50,7 +50,7 @@
 
     <c:if test="${empty paginatedResponse.content()}">
         <div class="alert alert-light text-center border mt-5">
-            <p class="mb-0">Aucune catégorie n'est disponible pour le moment.</p>
+            <p class="mb-0">Aucune catégorie trouvée.</p>
         </div>
     </c:if>
 

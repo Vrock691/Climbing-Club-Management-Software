@@ -58,12 +58,11 @@ public class CategoriesController {
         return new ModelAndView("categoriesScreen", "paginatedResponse", paginatedResponse);
     }
 
-    // TODO: Implémenter un controle d'identité
     @GetMapping("/{id}")
     public ModelAndView categories(@PathVariable Long id, @PageableDefault(size = 20) Pageable pageable) {
         Optional<Category> category = categoryService.findCategoryById(id);
         if (category.isEmpty()) {
-            String error = "Category not found";
+            String error = "Catégorie inexistante";
             OutingsResponseDTO response = new OutingsResponseDTO(null, error);
             return new ModelAndView("outingListScreen", "paginatedResponse", response);
         }
