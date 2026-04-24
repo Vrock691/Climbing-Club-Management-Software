@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -63,11 +64,12 @@ public class SampleDataInitializer implements CommandLineRunner {
             for (int i = 0; i < 200; i++) {
                 for (int j = 0; j < 100; j++) {
                     Outing newAssociatedOuting = new Outing();
-                    newAssociatedOuting.setName("outing-" + i + "-" + j);
+                    Category category = categories.get(j/2);
+                    newAssociatedOuting.setName("outing-"+UUID.randomUUID().toString());
                     newAssociatedOuting.setDate(new Date());
                     newAssociatedOuting.setOwner(members.get(i));
-                    newAssociatedOuting.setDescription("test-outing-" + i + "-" + j);
-                    newAssociatedOuting.setWebsite("outing-" + i + "-" + j + "-website.com");
+                    newAssociatedOuting.setDescription("test-outing-" + category.getId() + "-" + j);
+                    newAssociatedOuting.setWebsite("outing-" + category.getId() + "-" + j + "-website.com");
                     newAssociatedOuting.setCategory(categories.get(j/2));
                     outings.add(newAssociatedOuting);
                 }

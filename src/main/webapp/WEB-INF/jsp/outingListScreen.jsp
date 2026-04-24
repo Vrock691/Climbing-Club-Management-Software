@@ -3,7 +3,7 @@
 
 <main class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Sorties : <span class="text-primary">${categorie.nom}</span></h2>
+        <h2>Sorties : <span class="text-primary">${paginatedResponse.content().totalElements()}</span></h2>
         <a href="<c:url value='/categories'/>" class="btn btn-outline-secondary btn-sm">Retour aux catégories</a>
     </div>
 
@@ -31,10 +31,10 @@
             </tr>
             </thead>
             <tbody>
-            <c:forEach items="${pageSorties.content}" var="s">
+            <c:forEach items="${paginatedResponse.content().content()}" var="s">
                 <tr>
-                    <td class="text-nowrap"><fmt:formatDate value="${s.dateSortie}" pattern="dd/MM/yyyy" /></td>
-                    <td><strong>${s.nom}</strong></td>
+                    <td class="text-nowrap"><fmt:formatDate value="${s.date}" pattern="dd/MM/yyyy" /></td>
+                    <td><strong>${s.name}</strong></td>
                     <td class="text-truncate" style="max-width: 300px;">${s.description}</td>
                     <td class="text-center">
                         <a href="<c:url value='/outings/${s.id}'/>" class="btn btn-info btn-sm text-white">Voir détails</a>
@@ -45,15 +45,37 @@
         </table>
     </div>
 
-    <nav class="mt-4">
-        <ul class="pagination justify-content-center">
-            <c:forEach begin="0" end="${pageSorties.totalPages - 1}" var="i">
-                <li class="page-item ${pageSorties.number == i ? 'active' : ''}">
-                    <a class="page-link" href="?page=${i}">${i + 1}</a>
+    <c:if test="${paginatedResponse.content().totalPages() > 1}">
+        <nav class="mt-5" aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- Previous Button -->
+                <li class="page-item <c:if test="${paginatedResponse.content().isFirst()}">disabled</c:if>">
+                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.content().pageNumber() - 1}' />" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
                 </li>
-            </c:forEach>
-        </ul>
-    </nav>
+
+                <!-- Page Numbers -->
+                <c:forEach begin="0" end="${paginatedResponse.content().totalPages() - 1}" var="pageNum">
+                    <li class="page-item <c:if test="${pageNum == paginatedResponse.content().pageNumber()}">active</c:if>">
+                        <a class="page-link" href="<c:url value='?page=${pageNum}' />">${pageNum + 1}</a>
+                    </li>
+                </c:forEach>
+
+                <!-- Next Button -->
+                <li class="page-item <c:if test="${paginatedResponse.content().isLast()}">disabled</c:if>">
+                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.content().pageNumber() + 1}' />" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Pagination Info -->
+        <div class="text-center text-muted mt-3">
+            <small>Page ${paginatedResponse.content().pageNumber() + 1} sur ${paginatedResponse.content().totalPages()} | ${paginatedResponse.content().totalElements()} résultats</small>
+        </div>
+    </c:if>
 </main>
 
 <%@ include file="../footer.jsp" %>

@@ -3,7 +3,11 @@ package fr.mary.berger.climbing.club.manager.controllers;
 import fr.mary.berger.climbing.club.manager.dto.PaginatedResponse;
 import fr.mary.berger.climbing.club.manager.dto.categories.CategoriesResponseDTO;
 import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
+import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingDTO;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingsResponseDTO;
 import fr.mary.berger.climbing.club.manager.models.Category;
+import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.services.CategoryService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
 import jakarta.annotation.Nullable;
@@ -11,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,17 +58,39 @@ public class CategoriesController {
         return new ModelAndView("categoriesScreen", "paginatedResponse", paginatedResponse);
     }
 
-    // TODO: Créer des DTO pour la transmission des Outings, en fonction certaines infos ne doivent pas partir genre le site web ou l'organisateur
     // TODO: Implémenter un controle d'identité
-    // TODO: gérer les erreurs
     @GetMapping("/{id}")
-    public String categories(@PathVariable Long id, @PageableDefault(size = 20) Pageable pageable, Model model) {
+    public ModelAndView categories(@PathVariable Long id, @PageableDefault(size = 20) Pageable pageable) {
         Optional<Category> category = categoryService.findCategoryById(id);
-        if (category.isEmpty()) {}
+        if (category.isEmpty()) {
+            String error = "Category not found";
+            OutingsResponseDTO response = new OutingsResponseDTO(null, error);
+            return new ModelAndView("outingListScreen", "paginatedResponse", response);
+        }
 
-        model.addAttribute("pageSorties", outingService.findOutingByCategory(category.get(), pageable));
-        model.addAttribute("categorie", categoryService.findCategoryById(id));
-        return "outingListScreen";
+        Page<Outing> results = outingService.findOutingByCategory(category.get(), pageable);
+        List<OutingDTO> outingDTOs = results.map(cat ->
+                new OutingDTO(
+                        cat.getId(),
+                        new CategoryDTO(cat.getCategory().getId(), cat.getCategory().getName()),
+                        null,
+                        cat.getName(),
+                        cat.getDescription(),
+                        null,
+                        cat.getDate()
+                )
+        ).getContent();
+        PaginatedResponse<OutingDTO> paginatedResponse = new PaginatedResponse<>(
+                outingDTOs,
+                results.getNumber(),
+                results.getSize(),
+                results.getTotalElements(),
+                results.getTotalPages(),
+                results.isFirst(),
+                results.isLast()
+        );
+        OutingsResponseDTO response = new OutingsResponseDTO(paginatedResponse, null);
+        return new ModelAndView("outingListScreen", "paginatedResponse", response);
     }
 
 }
