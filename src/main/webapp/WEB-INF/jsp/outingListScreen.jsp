@@ -8,14 +8,49 @@
         <a href="<c:url value='/categories'/>" class="btn btn-outline-secondary btn-sm">Retour aux catégories</a>
     </div>
 
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body">
-            <form action="<c:url value='/search'/>" method="get" class="row g-2">
-                <div class="col-md-9">
-                    <input type="text" name="name" class="form-control" placeholder="Rechercher une sortie par nom...">
+    <div class="mb-3">
+        <button class="btn btn-outline-primary btn-sm" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#searchFormCollapse"
+                aria-expanded="true"
+                aria-controls="searchFormCollapse">
+            Afficher / masquer les filtres
+        </button>
+    </div>
+
+    <div class="collapse hide" id="searchFormCollapse">
+        <div class="card card-body mb-4">
+            <form action="" method="get">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nom</label>
+                    <input id="name" name="name" type="text" class="form-control" placeholder="Nom de la sortie" value="${param.name}">
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-dark w-100">Rechercher</button>
+
+                <c:if test="${pageContext.request.userPrincipal != null}">
+                    <div class="mb-3">
+                        <label for="ownersIds" class="form-label">Organisateurs</label>
+                        <select id="ownersIds" name="ownersIds" class="form-select" multiple size="5">
+                            <option value="">-- Sélectionner des organisateurs --</option>
+                            <c:forEach items="${members}" var="member">
+                                <option value="${member.id}">${member.username}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </c:if>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="dateFrom" class="form-label">Date début</label>
+                        <input id="dateFrom" name="dateFrom" type="date" class="form-control" value="${param.dateFrom}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="dateTo" class="form-label">Date fin</label>
+                        <input id="dateTo" name="dateTo" type="date" class="form-control" value="${param.dateTo}">
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
                 </div>
             </form>
         </div>
