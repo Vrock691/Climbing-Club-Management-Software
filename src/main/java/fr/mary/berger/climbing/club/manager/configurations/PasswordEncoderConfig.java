@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.security;
+package fr.mary.berger.climbing.club.manager.configurations;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

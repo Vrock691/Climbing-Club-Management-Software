@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.utils;
+package fr.mary.berger.climbing.club.manager.configurations;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
