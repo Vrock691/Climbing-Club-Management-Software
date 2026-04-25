@@ -28,11 +28,11 @@ public class OutingSpecification {
             }
 
             if (outingSearchCriteria.dateFrom() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("dateTo"), outingSearchCriteria.dateFrom()));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("date"), outingSearchCriteria.dateFrom()));
             }
 
             if (outingSearchCriteria.dateTo() != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("dateFrom"), outingSearchCriteria.dateTo()));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("date"), outingSearchCriteria.dateTo()));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

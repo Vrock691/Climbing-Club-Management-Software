@@ -2,7 +2,9 @@ package fr.mary.berger.climbing.club.manager.controllers;
 
 import fr.mary.berger.climbing.club.manager.dto.PaginatedResponse;
 import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
+import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingDTO;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingSearchCriteria;
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingsListResponseDTO;
 import fr.mary.berger.climbing.club.manager.models.Category;
 import fr.mary.berger.climbing.club.manager.models.Outing;
@@ -14,12 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +55,7 @@ public class CategoriesController {
     }
 
     @GetMapping("/{id}")
-    public ModelAndView categories(@PathVariable Long id, @PageableDefault(size = 20) Pageable pageable) {
+    public ModelAndView categories(@PathVariable Long id, @ModelAttribute @Nullable OutingSearchCriteria search, Principal principal, @PageableDefault(size = 20) Pageable pageable) {
         Optional<Category> category = categoryService.findCategoryById(id);
         if (category.isEmpty()) {
             String error = "Catégorie inexistante";
@@ -63,15 +63,33 @@ public class CategoriesController {
             return new ModelAndView("outingListScreen", "paginatedResponse", response);
         }
 
-        Page<Outing> results = outingService.findOutingByCategory(category.get(), pageable);
+        Page<Outing> results;
+        if (search == null) {
+            results = outingService.findOutingByCategory(category.get(), pageable);
+        } else {
+            OutingSearchCriteria criteria = new OutingSearchCriteria(
+                    search.name(),
+                    List.of(category.get().getId()),
+                    search.ownerIds(),
+                    search.dateFrom(),
+                    search.dateTo()
+            );
+            results = outingService.searchOuting(criteria, pageable);
+        }
+
         List<OutingDTO> outingDTOs = results.map(cat ->
                 new OutingDTO(
                         cat.getId(),
                         new CategoryDTO(cat.getCategory().getId(), cat.getCategory().getName()),
-                        null,
+                        (principal != null)
+                                ? new MemberDTO(
+                                    cat.getOwner().getUsername(),
+                                    cat.getOwner().getFirstName(),
+                                    cat.getOwner().getLastName())
+                                : null,
                         cat.getName(),
                         cat.getDescription(),
-                        null,
+                        (principal != null) ? cat.getWebsite() : null,
                         cat.getDate()
                 )
         ).getContent();

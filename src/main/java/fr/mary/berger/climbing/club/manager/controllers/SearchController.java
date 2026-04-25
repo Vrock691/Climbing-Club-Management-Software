@@ -23,8 +23,6 @@ import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 
-@Controller
-@RequestMapping("/search")
 @RequiredArgsConstructor
 public class SearchController {
 
@@ -42,7 +40,7 @@ public class SearchController {
     @PostMapping
     public ModelAndView search(@RequestParam(required = false) String name,
                                @RequestParam(required = false) List<Long> categoriesIds,
-                               @RequestParam(required = false) List<Long> ownersIds,
+                               @RequestParam(required = false) List<String> ownersIds,
                                @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateFrom,
                                @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateTo,
                                @PageableDefault(size = 20) Pageable pageable,

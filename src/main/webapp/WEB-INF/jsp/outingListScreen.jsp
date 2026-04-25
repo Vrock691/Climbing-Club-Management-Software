@@ -20,7 +20,7 @@
 
     <div class="collapse hide" id="searchFormCollapse">
         <div class="card card-body mb-4">
-            <form action="" method="get">
+            <form method="get">
                 <div class="mb-3">
                     <label for="name" class="form-label">Nom</label>
                     <input id="name" name="name" type="text" class="form-control" placeholder="Nom de la sortie" value="${param.name}">
@@ -28,8 +28,8 @@
 
                 <c:if test="${pageContext.request.userPrincipal != null}">
                     <div class="mb-3">
-                        <label for="ownersIds" class="form-label">Organisateurs</label>
-                        <select id="ownersIds" name="ownersIds" class="form-select" multiple size="5">
+                        <label for="ownerIds" class="form-label">Organisateurs</label>
+                        <select id="ownerIds" name="ownerIds" class="form-select" multiple size="5">
                             <option value="">-- Sélectionner des organisateurs --</option>
                             <c:forEach items="${members}" var="member">
                                 <option value="${member.id}">${member.username}</option>
@@ -90,7 +90,7 @@
             <ul class="pagination justify-content-center">
                 <!-- Previous Button -->
                 <li class="page-item <c:if test="${paginatedResponse.outings().isFirst()}">disabled</c:if>">
-                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() - 1}' />" aria-label="Previous">
+                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() - 1}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
@@ -98,13 +98,13 @@
                 <!-- Page Numbers -->
                 <c:forEach begin="0" end="${paginatedResponse.outings().totalPages() - 1}" var="pageNum">
                     <li class="page-item <c:if test="${pageNum == paginatedResponse.outings().pageNumber()}">active</c:if>">
-                        <a class="page-link" href="<c:url value='?page=${pageNum}' />">${pageNum + 1}</a>
+                        <a class="page-link" href="<c:url value='?page=${pageNum}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />">${pageNum + 1}</a>
                     </li>
                 </c:forEach>
 
                 <!-- Next Button -->
                 <li class="page-item <c:if test="${paginatedResponse.outings().isLast()}">disabled</c:if>">
-                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() + 1}' />" aria-label="Next">
+                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() + 1}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
