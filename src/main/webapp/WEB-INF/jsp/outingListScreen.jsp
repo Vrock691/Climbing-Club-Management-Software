@@ -31,10 +31,23 @@
                         <label for="ownerIds" class="form-label">Organisateurs</label>
                         <select id="ownerIds" name="ownerIds" class="form-select" multiple size="5">
                             <option value="">-- Sélectionner des organisateurs --</option>
-                            <c:forEach items="${members}" var="member">
-                                <option value="${member.id}">${member.username}</option>
+                            <c:forEach items="${paginatedResponse.organizers()}" var="member">
+                                <option value="${member.username}">${member.firstName} ${member.lastName}</option>
                             </c:forEach>
                         </select>
+                        <div class="form-text">Maintenir Ctrl/Cmd pour sélectionner plusieurs organisateurs.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ownerUsernameManual" class="form-label">Ou saisir un username</label>
+                        <input
+                                id="ownerUsernameManual"
+                                name="ownerIds"
+                                type="text"
+                                class="form-control"
+                                placeholder="ex: ${pageContext.request.userPrincipal.name}"
+                                value="${param.ownerIds}">
+                        <div class="form-text">Ce username sera ajouté au filtre des organisateurs.</div>
                     </div>
                 </c:if>
 

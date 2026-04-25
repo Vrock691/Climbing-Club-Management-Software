@@ -1,5 +1,6 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
+import fr.mary.berger.climbing.club.manager.dao.MemberDAO;
 import fr.mary.berger.climbing.club.manager.dto.PaginatedResponse;
 import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
 import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
@@ -7,6 +8,7 @@ import fr.mary.berger.climbing.club.manager.dto.outings.OutingDTO;
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingSearchCriteria;
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingsListResponseDTO;
 import fr.mary.berger.climbing.club.manager.models.Category;
+import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.services.CategoryService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
@@ -59,7 +61,7 @@ public class CategoriesController {
         Optional<Category> category = categoryService.findCategoryById(id);
         if (category.isEmpty()) {
             String error = "Catégorie inexistante";
-            OutingsListResponseDTO response = new OutingsListResponseDTO(null, error);
+            OutingsListResponseDTO response = new OutingsListResponseDTO(null, null, error);
             return new ModelAndView("outingListScreen", "paginatedResponse", response);
         }
 
@@ -102,7 +104,14 @@ public class CategoriesController {
                 results.isFirst(),
                 results.isLast()
         );
-        OutingsListResponseDTO response = new OutingsListResponseDTO(paginatedResponse, null);
+        List<MemberDTO> organizers = (principal != null)
+                ? outingDTOs.stream()
+                    .map(OutingDTO::member)
+                    .distinct()
+                    .toList()
+                : null;
+
+        OutingsListResponseDTO response = new OutingsListResponseDTO(paginatedResponse, organizers, null);
         return new ModelAndView("outingListScreen", "paginatedResponse", response);
     }
 
