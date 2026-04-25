@@ -2,12 +2,9 @@ package fr.mary.berger.climbing.club.manager.controllers;
 
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingRequestDTO;
 import fr.mary.berger.climbing.club.manager.dto.outings.OutingResponseDTO;
-import fr.mary.berger.climbing.club.manager.dto.outings.OutingDTO;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

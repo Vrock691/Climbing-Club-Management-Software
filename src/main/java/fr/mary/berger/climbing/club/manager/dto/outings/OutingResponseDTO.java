@@ -6,7 +6,7 @@ import java.util.Date;
 
 // TODO: Transformer ce DTO sur le modèle de OutingsListResponse (record + PaginatedResponse)
 // TODO: Donner un nom plus précis à voir à l'usage
-
+// TODO: Passer en Record
 @Data
 public class OutingResponseDTO {
 
