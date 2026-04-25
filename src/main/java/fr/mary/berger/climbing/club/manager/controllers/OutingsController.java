@@ -114,7 +114,7 @@ public class OutingsController {
         }
 
         // TODO: améliorer les noms des variables, et changer le DTO pour OutingDTO -> plus simple et évite la redondance, tu n'as qu'un seul resultat
-        // (à moins que tu veuilles transmettre une erreur
+        // (à moins que tu veuilles transmettre une erreur en plus)
         OutingRequestDTO updateDto = new OutingRequestDTO();
         updateDto.setName(outing.getName());
         updateDto.setDescription(outing.getDescription());
