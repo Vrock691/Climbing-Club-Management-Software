@@ -101,4 +101,30 @@ En conséquence, on retrouve les classes suivantes :
 - OutingController : Cette classe gère les routes "/outings", qui correspondent à la page de visualisation avancée des différentes sorties d'escalade en fonction d'un id sélectionnée, mais également au route de création/modification des sorties de l'utilisateur connecté.
 - AuthController : Cette classe gère les routes "/auth", qui correspondent à la page de connexion, de demande de réinitialisation de mot de passe, et de changement de mot de passe. La route de connexion est gérée par Spring Security, tandis que les routes de réinitialisation et de changement de mot de passe sont gérées par des méthodes spécifiques dans cette classe.
 
-= Tests et CI/CD
+=== Gestion pages JSP
+
+Page d'accueil : Affichage dynamique des catégories d'escalade.Liste des sorties : Système de navigation par catégorie avec pagination pour gérer le volume de données.Détails de sortie : Affichage public limité. Les visiteurs voient la description mais pas les infos privées (site web/organisateur).
+
+== DAO
+
+== DTO
+
+== Model
+
+== Spring Security - package security 
+
+== Service
+
+== Spécification
+
+= Tests, CI et démonstration
+
+== DataInitializers
+
+== Tests unitaires
+
+== CI
+
+= Points d'amélioration
+
+= Conclusion

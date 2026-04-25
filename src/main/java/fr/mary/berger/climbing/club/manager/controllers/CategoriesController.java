@@ -57,7 +57,7 @@ public class CategoriesController {
     }
 
     @GetMapping("/{id}")
-    public ModelAndView categories(@PathVariable Long id, @ModelAttribute @Nullable OutingSearchCriteria search, Principal principal, @PageableDefault(size = 20) Pageable pageable) {
+    public ModelAndView categoryWithOuting(@PathVariable Long id, @ModelAttribute @Nullable OutingSearchCriteria search, Principal principal, @PageableDefault(size = 20) Pageable pageable) {
         Optional<Category> category = categoryService.findCategoryById(id);
         if (category.isEmpty()) {
             String error = "Catégorie inexistante";
