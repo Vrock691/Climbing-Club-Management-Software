@@ -7,10 +7,11 @@ import java.util.Date;
 
 public record OutingDTO(
         Long id,
-        CategoryDTO category,
-        MemberDTO member,
         String name,
         String description,
+        Date date,
         String website,
-        Date date
+        Long categoryId,
+        String categoryName,
+        String organizerName
 ) {}
