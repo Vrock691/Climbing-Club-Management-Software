@@ -19,8 +19,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 
-// TODO: Utiliser ModelAndView si nécéssaire dans les retour des modèles plutot que de simple string/attributs
-
 @Controller
 @RequestMapping("/outings")
 @RequiredArgsConstructor
@@ -30,36 +28,31 @@ public class OutingsController {
     private final MemberService memberService;
     private final OutingModificationRightsChecker rightsChecker;
 
-    // TODO: Modifier les anciens DTO pour séparer les responsabilités et supprimer les données/méthodes non essentielles
     @GetMapping("/{id}")
-    public ModelAndView showOutingById(@PathVariable Long id, Principal principal, Model model) {
+    public ModelAndView showOutingById(@PathVariable Long id, Principal principal) {
         Outing outing = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
 
-        boolean isMember = (principal != null);
-        String web = isMember ? outing.getWebsite() : "Masqué (Connectez-vous)";
-        MemberDTO owner = isMember ? (new MemberDTO(
-                                        outing.getOwner().getUsername(),
-                                        outing.getOwner().getFirstName(),
-                                        outing.getOwner().getLastName()
-                                        )) : null;
-        
-        OutingDTO showingByIdDto = new OutingDTO(
+        boolean authenticated = (principal != null);
+
+        OutingDTO outingDTO = new OutingDTO(
                 outing.getId(),
                 new CategoryDTO(
                         outing.getCategory().getId(),
                         outing.getCategory().getName()
                 ),
-                owner,
+                authenticated ? (new MemberDTO(
+                        outing.getOwner().getUsername(),
+                        outing.getOwner().getFirstName(),
+                        outing.getOwner().getLastName()
+                )) : null,
                 outing.getName(),
                 outing.getDescription(),
-                web,
+                authenticated ? outing.getWebsite() : null,
                 outing.getDate()
-                
         );
 
-        model.addAttribute("sortie", showingByIdDto);
-        return new ModelAndView("outingDetailsScreen", "sortie", showingByIdDto);
+        return new ModelAndView("outingDetailsScreen", "outing", outingDTO);
     }
 
     @GetMapping("/new")
