@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,7 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -122,21 +121,41 @@ public class OutingsController {
         }
 
         outingService.createOuting(newOuting);
-        return new ModelAndView("redirect:/outings/{" + newOuting.getId() + "}");
+        return new ModelAndView("redirect:/outings/" + newOuting.getId());
     }
 
     @GetMapping("/{id}/update")
-    public ModelAndView showUpdateOutingForm(@PathVariable Long id, Principal principal, Model model, RedirectAttributes redirectAttributes) {
+    public ModelAndView showUpdateOutingForm(
+            @PathVariable Long id,
+            @RequestParam @Nullable String searchCategory,
+            Principal principal,
+            RedirectAttributes redirectAttributes
+    ) {
 
         Outing outing = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
-        // Vérification id
+
         if (!rightsChecker.isModificationPermitted(principal.getName(),outing.getId())) {
             redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
             return new ModelAndView("redirect:/outings/");
         }
 
-         OutingFormDTO updateDTO = new OutingFormDTO(
+        List<CategoryDTO> suggestedCategoryList = new ArrayList<>();
+        suggestedCategoryList.add(new CategoryDTO(
+            outing.getCategory().getId(),
+            outing.getCategory().getName()
+        ));
+
+        Pageable pageable = PageRequest.of(0, 10);
+        if (searchCategory != null) {
+            suggestedCategoryList.addAll(categoryService.findCategoryByNamePattern(searchCategory, pageable)
+                    .stream()
+                    .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                    .toList()
+            );
+        }
+
+        OutingFormDTO outingDTO = new OutingFormDTO(
                  outing.getId(),
                  outing.getName(),
                  outing.getDescription(),
@@ -145,10 +164,11 @@ public class OutingsController {
                  outing.getCategory().getId()
         );
 
-        ModelAndView localMaV = new ModelAndView("newOutingFormScreen");
-        localMaV.addObject("action", "edit");
-        localMaV.addObject("outing", updateDTO);
-        return localMaV;
+        ModelAndView response = new ModelAndView("newOutingFormScreen");
+        response.addObject("suggestedCategoryList", suggestedCategoryList);
+        response.addObject("action", "edit");
+        response.addObject("outing", outingDTO);
+        return response;
     }
 
     // TODO: Simplifier, tu as trois retour d'erreur avec trois syntaxes différentes

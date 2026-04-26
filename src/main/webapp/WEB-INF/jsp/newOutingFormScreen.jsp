@@ -24,7 +24,7 @@
                         </form>
                     </div>
 
-                    <c:set var="postUrl" value="${action == 'edit' ? '/outings/'.concat(outing.id()).concat('/update') : '/outings/new'}" />
+                    <c:set var="postUrl" value="${action == 'edit' ? '/outings/'.concat(outing.getId()).concat('/update') : '/outings/new'}" />
                     <form:form action="${postUrl}" method="post" modelAttribute="outing">
 
                         <div class="mb-3">
