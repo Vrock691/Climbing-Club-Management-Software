@@ -2,6 +2,7 @@ package fr.mary.berger.climbing.club.manager.security;
 
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.Outing;
+import fr.mary.berger.climbing.club.manager.security.validators.OutingModificationRightsChecker;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
 import org.junit.jupiter.api.Assertions;

@@ -29,9 +29,9 @@ public class TestDataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         log.info("Removing old data");
+        outingDAO.deleteAll();
         categoryDAO.deleteAll();
         memberDAO.deleteAll();
-        outingDAO.deleteAll();
 
         log.info("Initializing test data...");
 

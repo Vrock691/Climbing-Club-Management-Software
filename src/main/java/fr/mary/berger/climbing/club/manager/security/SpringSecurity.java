@@ -55,12 +55,15 @@ public class SpringSecurity {
                 "/auth/**",
                 "/home",
                 "/search",
+                "/search/**",
                 "/categories",
                 "/categories/**",
                 "/outings/*",
                 "/css/**",
                 "/js/**",
-                "/images/**"
+                "/images/**",
+                "/error",
+                "/error/**"
         };
 
         String[] authenticatedRequests = {
@@ -70,13 +73,13 @@ public class SpringSecurity {
         };
 
         http.authorizeHttpRequests(config -> {
-            config.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll();
-            config.requestMatchers(anonymousRequests).permitAll();
             config.requestMatchers(authenticatedRequests).authenticated();
+            config.requestMatchers(anonymousRequests).permitAll();
+            config.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll();
             config.anyRequest().authenticated();
         });
 
-        http.formLogin(config -> {
+        http.formLogin(config -> {      
             config.loginPage("/auth/login");
             config.usernameParameter("username");
             config.passwordParameter("password");
@@ -91,7 +94,9 @@ public class SpringSecurity {
 
         http.csrf(config -> {
             config.ignoringRequestMatchers(anonymousRequests);
+            config.ignoringRequestMatchers("/logout");
         });
+
         return http.build();
     }
 }

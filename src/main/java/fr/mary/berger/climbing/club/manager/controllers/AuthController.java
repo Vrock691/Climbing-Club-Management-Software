@@ -1,11 +1,10 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
-import fr.mary.berger.climbing.club.manager.dto.password.ChangePasswordRequestDTO;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.EmailService;
 import fr.mary.berger.climbing.club.manager.services.PasswordRecoveryTokenService;
-import fr.mary.berger.climbing.club.manager.utils.UrlConfig;
+import fr.mary.berger.climbing.club.manager.configurations.UrlConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,12 +30,12 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login() {
-        return "login";
+        return "loginScreen";
     }
 
     @GetMapping("/forgot-password")
     public String showForgotForm() {
-        return "forgotPassword";
+        return "forgotPasswordScreen";
     }
 
     @PostMapping("/forgot-password")
@@ -60,7 +59,7 @@ public class AuthController {
             model.addAttribute("message", "Un e-mail contenant un lien a été envoyé si le compte existe.");
         }
 
-        return "forgotPassword";
+        return "forgotPasswordScreen";
     }
 
     @GetMapping("/change-password")
@@ -71,11 +70,11 @@ public class AuthController {
 
         if (token == null || token.isBlank()) {
             model.addAttribute("error", "Lien de réinitialisation invalide.");
-            return "forgotPassword";
+            return "forgotPasswordScreen";
         }
 
         model.addAttribute("token", token);
-        return "changePassword";
+        return "changePasswordScreen";
     }
 
     @PostMapping(value = "/change-password", consumes = "application/x-www-form-urlencoded")
@@ -84,29 +83,32 @@ public class AuthController {
             @RequestParam("password") String password,
             Model model) {
 
+        token = (token == null) ? null : token.trim();
+        password = (password == null) ? null : password.trim();
+
         if (token == null || token.isBlank()) {
             model.addAttribute("error", "Lien de réinitialisation invalide.");
-            return "forgotPassword";
+            return "forgotPasswordScreen";
         }
 
-        if (password == null || password.isBlank()) {
-            model.addAttribute("error", "Le mot de passe ne peut pas être vide.");
+        if (password == null || password.isBlank() || password.length() < 8) {
+            model.addAttribute("error", "Le mot de passe ne peut pas être inférieur à 8 caractères.");
             model.addAttribute("token", token);
-            return "changePassword";
+            return "changePasswordScreen";
         }
 
         // Chercher le member associé au token
         Optional<Member> member = passwordRecoveryTokenService.findMemberByToken(token);
         if (member.isEmpty()) {
             model.addAttribute("error", "Lien de réinitialisation invalide ou expiré.");
-            return "forgotPassword";
+            return "forgotPasswordScreen";
         }
         Member memberFound = member.get();
 
         // Vérifier et mettre à jour en conséquence
         if (!passwordRecoveryTokenService.checkPasswordResetToken(memberFound, token)) {
             model.addAttribute("error", "Lien de réinitialisation expiré.");
-            return "forgotPassword";
+            return "forgotPasswordScreen";
         }
         String encodedPassword = passwordEncoder.encode(password);
         memberService.changePassword(memberFound, encodedPassword);

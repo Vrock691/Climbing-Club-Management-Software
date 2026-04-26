@@ -1,7 +1,7 @@
 package fr.mary.berger.climbing.club.manager.services;
 
 import fr.mary.berger.climbing.club.manager.dao.OutingDAO;
-import fr.mary.berger.climbing.club.manager.dto.OutingSearchCriteria;
+import fr.mary.berger.climbing.club.manager.dto.outings.OutingSearchCriteria;
 import fr.mary.berger.climbing.club.manager.models.Category;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.specifications.OutingSpecification;
@@ -30,10 +30,6 @@ public class OutingService {
     public Page<Outing> searchOuting(OutingSearchCriteria outingSearchCriteria, Pageable pageable) {
         Specification<Outing> spec = OutingSpecification.withCriteria(outingSearchCriteria);
         return outingDAO.findAll(spec, pageable);
-    }
-
-    public Page<Outing> findByOwnerUsername(String ownerUsername, Pageable pageable) {
-        return outingDAO.findByOwner_Username(ownerUsername, pageable);
     }
 
     public void createOuting(Outing outing) {

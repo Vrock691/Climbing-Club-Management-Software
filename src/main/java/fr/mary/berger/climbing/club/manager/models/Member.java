@@ -3,8 +3,6 @@ package fr.mary.berger.climbing.club.manager.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Collection;
-
 @Entity
 @Getter @Setter
 public class Member {
