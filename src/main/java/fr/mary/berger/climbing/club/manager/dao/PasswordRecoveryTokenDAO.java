@@ -1,6 +1,5 @@
 package fr.mary.berger.climbing.club.manager.dao;
 
-import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.PasswordRecoveryToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 

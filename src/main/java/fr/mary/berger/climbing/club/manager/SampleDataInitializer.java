@@ -6,11 +6,10 @@ import fr.mary.berger.climbing.club.manager.dao.OutingDAO;
 import fr.mary.berger.climbing.club.manager.models.Category;
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.Outing;
-import fr.mary.berger.climbing.club.manager.security.PasswordEncoderConfig;
+import fr.mary.berger.climbing.club.manager.configurations.PasswordEncoderConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

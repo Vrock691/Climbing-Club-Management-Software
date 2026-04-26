@@ -8,14 +8,62 @@
         <a href="<c:url value='/categories'/>" class="btn btn-outline-secondary btn-sm">Retour aux catégories</a>
     </div>
 
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body">
-            <form action="<c:url value='/search'/>" method="get" class="row g-2">
-                <div class="col-md-9">
-                    <input type="text" name="name" class="form-control" placeholder="Rechercher une sortie par nom...">
+    <div class="mb-3">
+        <button class="btn btn-outline-primary btn-sm" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#searchFormCollapse"
+                aria-expanded="true"
+                aria-controls="searchFormCollapse">
+            Afficher / masquer les filtres
+        </button>
+    </div>
+
+    <div class="collapse hide" id="searchFormCollapse">
+        <div class="card card-body mb-4">
+            <form method="get">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nom</label>
+                    <input id="name" name="name" type="text" class="form-control" placeholder="Nom de la sortie" value="${param.name}">
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-dark w-100">Rechercher</button>
+
+                <c:if test="${pageContext.request.userPrincipal != null}">
+                    <div class="mb-3">
+                        <label for="ownerIds" class="form-label">Organisateurs</label>
+                        <select id="ownerIds" name="ownerIds" class="form-select" multiple size="5">
+                            <option value="">-- Sélectionner des organisateurs --</option>
+                            <c:forEach items="${paginatedResponse.organizers()}" var="member">
+                                <option value="${member.username}">${member.firstName} ${member.lastName}</option>
+                            </c:forEach>
+                        </select>
+                        <div class="form-text">Maintenir Ctrl/Cmd pour sélectionner plusieurs organisateurs.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ownerUsernameManual" class="form-label">Ou saisir un username</label>
+                        <input
+                                id="ownerUsernameManual"
+                                name="ownerIds"
+                                type="text"
+                                class="form-control"
+                                placeholder="ex: ${pageContext.request.userPrincipal.name}"
+                                value="${param.ownerIds}">
+                        <div class="form-text">Ce username sera ajouté au filtre des organisateurs.</div>
+                    </div>
+                </c:if>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="dateFrom" class="form-label">Date début</label>
+                        <input id="dateFrom" name="dateFrom" type="date" class="form-control" value="${param.dateFrom}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="dateTo" class="form-label">Date fin</label>
+                        <input id="dateTo" name="dateTo" type="date" class="form-control" value="${param.dateTo}">
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
                 </div>
             </form>
         </div>
@@ -55,7 +103,7 @@
             <ul class="pagination justify-content-center">
                 <!-- Previous Button -->
                 <li class="page-item <c:if test="${paginatedResponse.outings().isFirst()}">disabled</c:if>">
-                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() - 1}' />" aria-label="Previous">
+                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() - 1}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
@@ -63,13 +111,13 @@
                 <!-- Page Numbers -->
                 <c:forEach begin="0" end="${paginatedResponse.outings().totalPages() - 1}" var="pageNum">
                     <li class="page-item <c:if test="${pageNum == paginatedResponse.outings().pageNumber()}">active</c:if>">
-                        <a class="page-link" href="<c:url value='?page=${pageNum}' />">${pageNum + 1}</a>
+                        <a class="page-link" href="<c:url value='?page=${pageNum}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />">${pageNum + 1}</a>
                     </li>
                 </c:forEach>
 
                 <!-- Next Button -->
                 <li class="page-item <c:if test="${paginatedResponse.outings().isLast()}">disabled</c:if>">
-                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() + 1}' />" aria-label="Next">
+                    <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() + 1}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>

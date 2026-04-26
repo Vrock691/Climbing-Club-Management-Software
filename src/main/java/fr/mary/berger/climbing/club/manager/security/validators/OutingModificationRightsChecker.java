@@ -1,4 +1,4 @@
-package fr.mary.berger.climbing.club.manager.security;
+package fr.mary.berger.climbing.club.manager.security.validators;
 
 import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.Outing;

@@ -7,16 +7,16 @@
         <div class="col-lg-8">
             <div class="card shadow border-0">
                 <div class="card-header bg-primary text-white py-3">
-                    <h3 class="card-title mb-0">${sortie.nom}</h3>
+                    <h3 class="card-title mb-0">${outing.name()}</h3>
                 </div>
                 <div class="card-body p-4">
                     <div class="mb-4">
-                        <span class="badge bg-secondary mb-2">${sortie.categorie.nom}</span>
-                        <p class="text-muted"><i class="bi bi-calendar"></i> Prévue le : <strong><fmt:formatDate value="${sortie.dateSortie}" pattern="dd MMMM yyyy" /></strong></p>
+                        <span class="badge bg-secondary mb-2">${outing.category().name()}</span>
+                        <p class="text-muted"><i class="bi bi-calendar"></i> Prévue le : <strong><fmt:formatDate value="${outing.date()}" pattern="dd MMMM yyyy" /></strong></p>
                     </div>
 
                     <h5>Description</h5>
-                    <p class="lead">${sortie.description}</p>
+                    <p class="lead">${outing.description()}</p>
 
                     <hr class="my-4">
 
@@ -24,15 +24,18 @@
                         <div class="bg-light p-3 rounded mb-4">
                             <h5 class="text-primary">Informations réservées aux membres</h5>
                             <ul class="list-unstyled mb-0">
-                                <li class="mb-2"><strong>🌐 Site Web :</strong> <a href="${sortie.siteWeb}" target="_blank">${sortie.siteWeb}</a></li>
-                                <li><strong>👤 Organisateur :</strong> ${sortie.createur.prenom} ${sortie.createur.nom}</li>
+                                <li class="mb-2"><strong>🌐 Site Web :</strong> <a href="${outing.website()}" target="_blank">${outing.website()}</a></li>
+                                <li><strong>👤 Organisateur :</strong> ${outing.member().firstName()} ${outing.member().lastName()} (${outing.member().username()})</li>
                             </ul>
                         </div>
 
-                        <c:if test="${pageContext.request.userPrincipal.name == sortie.createur.email}">
+                        <c:if test="${pageContext.request.userPrincipal.name == outing.member().username()}">
                             <div class="d-flex gap-2">
-                                <a href="<c:url value='/outings/${sortie.id}/update'/>" class="btn btn-warning">Modifier ma sortie</a>
-                                <a href="<c:url value='/outings/${sortie.id}/delete'/>" class="btn btn-danger" onclick="return confirm('Supprimer définitivement ?')">Supprimer</a>
+                                <a href="<c:url value='/outings/${outing.id()}/update'/>" class="btn btn-warning">Modifier ma sortie</a>
+                                <form method="POST" action="<c:url value='/outings/${outing.id()}/delete'/>" style="display:inline;">
+                                    <input type="hidden" name="_csrf" value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer définitivement ?')">Supprimer</button>
+                                </form>
                             </div>
                         </c:if>
                     </sec:authorize>

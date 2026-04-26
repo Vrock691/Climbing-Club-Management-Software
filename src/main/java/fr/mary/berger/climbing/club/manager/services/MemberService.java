@@ -32,14 +32,6 @@ public class MemberService implements UserDetailsService {
         memberDAO.save(member);
     }
 
-    public void deleteMember(Member member) {
-        memberDAO.delete(member);
-    }
-
-    public void updateMember(Member member) {
-        memberDAO.save(member);
-    }
-
     public Optional<Member> findMemberByEmail(String email) {
         return memberDAO.findMemberByEmail(email);
     }

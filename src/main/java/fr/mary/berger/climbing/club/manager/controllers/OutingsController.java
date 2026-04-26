@@ -1,14 +1,31 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
+import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
+import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
+import fr.mary.berger.climbing.club.manager.dto.outings.*;
+import fr.mary.berger.climbing.club.manager.models.Category;
+import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.Outing;
+import fr.mary.berger.climbing.club.manager.services.CategoryService;
+import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
+import fr.mary.berger.climbing.club.manager.security.validators.OutingModificationRightsChecker;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/outings")
@@ -16,52 +33,201 @@ import java.security.Principal;
 public class OutingsController {
 
     private final OutingService outingService;
+    private final MemberService memberService;
+    private final OutingModificationRightsChecker rightsChecker;
+    private final CategoryService categoryService;
 
-    // TODO: Utiliser un DTO pour passer la sortie, certaines informations ne doivent pas être transmise comme le site internet et l'organisateur
-    // TODO: Implémenter une vérification d'identité
     @GetMapping("/{id}")
-    public String showOutingById(@PathVariable String id, Principal principal, Model model) {
-        model.addAttribute("sortie", outingService.findOutingById(Long.valueOf(id)));
-        return "outingDetailsScreen";
+    public ModelAndView showOutingById(@PathVariable Long id, Principal principal) {
+        Outing outing = outingService.findOutingById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
+
+        boolean authenticated = (principal != null);
+
+        OutingDTO outingDTO = new OutingDTO(
+                outing.getId(),
+                new CategoryDTO(
+                        outing.getCategory().getId(),
+                        outing.getCategory().getName()
+                ),
+                authenticated ? (new MemberDTO(
+                        outing.getOwner().getUsername(),
+                        outing.getOwner().getFirstName(),
+                        outing.getOwner().getLastName()
+                )) : null,
+                outing.getName(),
+                outing.getDescription(),
+                authenticated ? outing.getWebsite() : null,
+                outing.getDate()
+        );
+
+        return new ModelAndView("outingDetailsScreen", "outing", outingDTO);
     }
 
     @GetMapping("/new")
-    public String showCreateOutingForm(Model model) {
-        return "newOutingFormScreen";
-    }
-
-    // TODO: Créer deux DTO pour la requete et la réponse et créer l'objet Outing localement, puis rediriger avec un message de succès ou d'erreur
-    @PostMapping("/new")
-    public String createOuting(@ModelAttribute("sortie") Outing outing,
-                               BindingResult result,
-                               Principal principal) { // --> Obj injecté par spring qui représente l'utilisateur connecté
-        if (result.hasErrors()) {
-            return "newOutingFormScreen";
+    public ModelAndView showCreateOutingForm(@RequestParam @Nullable String searchCategory) {
+        List<CategoryDTO> suggestedCategoryList;
+        Pageable pageable = PageRequest.of(0, 10);
+        if (searchCategory == null) {
+            suggestedCategoryList = categoryService.getAllCategories(pageable)
+                    .stream()
+                    .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                    .toList();
+        } else {
+            suggestedCategoryList = categoryService.findCategoryByNamePattern(searchCategory, pageable)
+                    .stream()
+                    .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                    .toList();
         }
 
-        String email = principal.getName();
-        outingService.createOuting(outing);
-
-        return "redirect:/public/categories";
+        ModelAndView response = new ModelAndView("newOrEditOutingFormScreen");
+        response.addObject("suggestedCategoryList", suggestedCategoryList);
+        response.addObject("action", "create");
+        response.addObject("outing", new OutingFormDTO());
+        return response;
     }
 
-    // TODO: faire la page jsp de modification (qui peut etre la même que celle de proposition mais en passant par un DTO)
+    @PostMapping("/new")
+    public ModelAndView createOuting(@ModelAttribute("outing") OutingFormDTO outingFormDTO,
+                                     BindingResult result,
+                                     RedirectAttributes redirectAttributes,
+                                     Principal principal) {
+        if (result.hasErrors()) {
+            return new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
+        }
+
+        Outing newOuting = new Outing();
+        newOuting.setName(outingFormDTO.getName());
+        newOuting.setDescription(outingFormDTO.getDescription());
+        newOuting.setWebsite(outingFormDTO.getWebsite());
+        newOuting.setDate(outingFormDTO.getDate());
+
+        Optional<Member> owner = memberService.findMemberByUsername(principal.getName());
+        if (owner.isPresent()) {
+            newOuting.setOwner(owner.get());
+        } else {
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
+            response.addObject("error", "Veuillez vous reconnecter");
+            return response;
+        }
+
+        Optional<Category> category = categoryService.findCategoryById(outingFormDTO.getCategoryId());
+        if (category.isPresent()) {
+            newOuting.setCategory(category.get());
+        } else {
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
+            response.addObject("error", "Catégorie invalide");
+            return response;
+        }
+
+        outingService.createOuting(newOuting);
+        return new ModelAndView("redirect:/outings/" + newOuting.getId());
+    }
+
     @GetMapping("/{id}/update")
-    public String showUpdateOutingForm(Model model, @PathVariable String id) {
-        return "newOutingFormScreen";
+    public ModelAndView showUpdateOutingForm(
+            @PathVariable Long id,
+            @RequestParam @Nullable String searchCategory,
+            Principal principal,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        Outing outing = outingService.findOutingById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
+
+        if (!rightsChecker.isModificationPermitted(principal.getName(),outing.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
+            return new ModelAndView("redirect:/outings/");
+        }
+
+        List<CategoryDTO> suggestedCategoryList = new ArrayList<>();
+        suggestedCategoryList.add(new CategoryDTO(
+            outing.getCategory().getId(),
+            outing.getCategory().getName()
+        ));
+
+        Pageable pageable = PageRequest.of(0, 10);
+        if (searchCategory != null) {
+            suggestedCategoryList.addAll(categoryService.findCategoryByNamePattern(searchCategory, pageable)
+                    .stream()
+                    .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                    .toList()
+            );
+        }
+
+        OutingFormDTO outingDTO = new OutingFormDTO(
+                 outing.getId(),
+                 outing.getName(),
+                 outing.getDescription(),
+                 outing.getDate(),
+                 outing.getWebsite(),
+                 outing.getCategory().getId()
+        );
+
+        ModelAndView response = new ModelAndView("newOrEditOutingFormScreen");
+        response.addObject("suggestedCategoryList", suggestedCategoryList);
+        response.addObject("action", "edit");
+        response.addObject("outing", outingDTO);
+        return response;
     }
 
-    // TODO: implémenter
     @PostMapping("/{id}/update")
-    public String updateOuting(@PathVariable String id, Principal principal, Model model) {
-        return "outing";
+    public ModelAndView updateOuting(@PathVariable Long id,
+                                     @ModelAttribute("outing") OutingFormDTO outingFormDTO,
+                                     BindingResult result,
+                                     Principal principal,
+                                     RedirectAttributes redirectAttributes) {
+
+        if (result.hasErrors()) {
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen");
+            response.addObject("action", "edit");
+            response.addObject("outing", outingFormDTO);
+            return response;
+        }
+
+        Outing existingOuting = outingService.findOutingById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!rightsChecker.isModificationPermitted(principal.getName(),existingOuting.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
+            return new ModelAndView("redirect:/outings");
+        }
+
+        existingOuting.setName(outingFormDTO.getName());
+        existingOuting.setDescription(outingFormDTO.getDescription());
+        existingOuting.setWebsite(outingFormDTO.getWebsite());
+        existingOuting.setDate(outingFormDTO.getDate());
+
+        Optional<Category> category = categoryService.findCategoryById(outingFormDTO.getCategoryId());
+        if (category.isPresent()) {
+            existingOuting.setCategory(category.get());
+        } else {
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
+            response.addObject("error", "Catégorie invalide");
+            return response;
+        }
+
+        outingService.updateOuting(existingOuting);
+        return new ModelAndView("redirect:/outings/" + existingOuting.getId());
     }
 
-    // TODO: Faire la vérification d'identité au sein du controller, renvoyer un message de succès ou d'erreur, vérifier aussi que la sortie existe
-    @DeleteMapping("/{id}/delete")
-    public String deleteOuting(@PathVariable String id, Principal principal, Model model) {
-        outingService.deleteOuting(Long.valueOf(id));
-        return "redirect:/public/categories";
+
+    @PostMapping("/{id}/delete")
+    public ModelAndView deleteOuting(@PathVariable Long id,
+                                     Principal principal,
+                                     RedirectAttributes redirectAttributes) {
+
+        Outing outing = outingService.findOutingById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
+
+        if (!rightsChecker.isModificationPermitted(principal.getName(),outing.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
+            return new ModelAndView("redirect:/outings/");
+        }
+
+        outingService.deleteOuting(id);
+        redirectAttributes.addFlashAttribute("success", "La sortie a été supprimée avec succès.");
+        return new ModelAndView("redirect:/categories");
     }
 
 }

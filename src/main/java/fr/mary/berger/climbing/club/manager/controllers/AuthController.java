@@ -4,7 +4,7 @@ import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.EmailService;
 import fr.mary.berger.climbing.club.manager.services.PasswordRecoveryTokenService;
-import fr.mary.berger.climbing.club.manager.utils.UrlConfig;
+import fr.mary.berger.climbing.club.manager.configurations.UrlConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -83,13 +83,16 @@ public class AuthController {
             @RequestParam("password") String password,
             Model model) {
 
+        token = (token == null) ? null : token.trim();
+        password = (password == null) ? null : password.trim();
+
         if (token == null || token.isBlank()) {
             model.addAttribute("error", "Lien de réinitialisation invalide.");
             return "forgotPasswordScreen";
         }
 
-        if (password == null || password.isBlank()) {
-            model.addAttribute("error", "Le mot de passe ne peut pas être vide.");
+        if (password == null || password.isBlank() || password.length() < 8) {
+            model.addAttribute("error", "Le mot de passe ne peut pas être inférieur à 8 caractères.");
             model.addAttribute("token", token);
             return "changePasswordScreen";
         }
