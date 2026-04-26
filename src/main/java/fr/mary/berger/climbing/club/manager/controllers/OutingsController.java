@@ -89,12 +89,11 @@ public class OutingsController {
             creationOuting.setWebsite(outingDto.getWebSite());
             outingService.createOuting(creationOuting);
 
-            // TODO: Vérifier si ça vaudrait le coup de passer ça en ModelAndView, mais pas sur
             redirectAttributes.addFlashAttribute("success", "Votre sortie a été créée avec succès !");
             return new ModelAndView("redirect:/categories");
 
         } catch (Exception e) {
-            // TODO: Complexe: peut-etre que le dto peut contenir cette erreur est celle d'au dessus
+            // TODO: Complexe: peut-etre que le dto peut contenir cette erreur et celle d'au dessus
             ModelAndView localMaV = new ModelAndView("form_outing", "sortie", outingDto);
             localMaV.addObject("error", "Une erreur est survenue : " + e.getMessage());
             return localMaV;
