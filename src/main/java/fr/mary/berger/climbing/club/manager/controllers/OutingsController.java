@@ -1,9 +1,12 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
+import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
+import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
 import fr.mary.berger.climbing.club.manager.dto.outings.*;
 import fr.mary.berger.climbing.club.manager.models.Outing;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
+import fr.mary.berger.climbing.club.manager.security.validators.OutingModificationRightsChecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -25,6 +28,7 @@ public class OutingsController {
 
     private final OutingService outingService;
     private final MemberService memberService;
+    private final OutingModificationRightsChecker rightsChecker;
 
     // TODO: Modifier les anciens DTO pour séparer les responsabilités et supprimer les données/méthodes non essentielles
     @GetMapping("/{id}")
@@ -34,17 +38,24 @@ public class OutingsController {
 
         boolean isMember = (principal != null);
         String web = isMember ? outing.getWebsite() : "Masqué (Connectez-vous)";
-        String owner = isMember ? (outing.getOwner().getFirstName() + " " + outing.getOwner().getLastName()) : "Organisateur masqué";
-
+        MemberDTO owner = isMember ? (new MemberDTO(
+                                        outing.getOwner().getUsername(),
+                                        outing.getOwner().getFirstName(),
+                                        outing.getOwner().getLastName()
+                                        )) : null;
+        
         OutingDTO showingByIdDto = new OutingDTO(
                 outing.getId(),
+                new CategoryDTO(
+                        outing.getCategory().getId(),
+                        outing.getCategory().getName()
+                ),
+                owner,
                 outing.getName(),
                 outing.getDescription(),
-                outing.getDate(),
-                null,
-                null,
-                null,
-                null
+                web,
+                outing.getDate()
+                
         );
 
         model.addAttribute("sortie", showingByIdDto);
@@ -101,14 +112,14 @@ public class OutingsController {
     }
 
     @GetMapping("/{id}/update")
-    public ModelAndView showUpdateOutingForm(@PathVariable Long id, Principal principal, Model model) {
+    public ModelAndView showUpdateOutingForm(@PathVariable Long id, Principal principal, Model model, RedirectAttributes redirectAttributes) {
 
-        // TODO: Utiliser l'utilitaire OutingModificationRightChecker dans security
         Outing outing = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
         // Vérification id
-        if (!outing.getOwner().getEmail().equals(principal.getName())) { // Ça marche avec name du coup ??
-            return new ModelAndView("redirect:/outings/" + id + "?error=unauthorized");
+        if (!rightsChecker.isModificationPermitted(principal.getName(),outing.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
+            return new ModelAndView("redirect:/outings/");
         }
 
          OutingUpdateDTO updateDTO = new OutingUpdateDTO(
@@ -149,11 +160,13 @@ public class OutingsController {
             return mav;
         }
 
-        // TODO: Utiliser l'utilitaire de checking comme au dessus
+
         Outing existingOuting = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (!existingOuting.getOwner().getEmail().equals(principal.getName())) {
-            return new ModelAndView("redirect:/outings/" + id + "?error=unauthorized");
+        // Vérification id
+        if (!rightsChecker.isModificationPermitted(principal.getName(),existingOuting.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
+            return new ModelAndView("redirect:/outings/");
         }
 
         try {
@@ -180,13 +193,12 @@ public class OutingsController {
                                      Principal principal,
                                      RedirectAttributes redirectAttributes) {
 
-        // TODO: Utiliser l'utilitaire de check des droits comme au dessus
         Outing outing = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
-
-        if (!outing.getOwner().getEmail().equals(principal.getName())) {
-            redirectAttributes.addFlashAttribute("error", "Vous n'avez pas l'autorisation de supprimer cette sortie.");
-            return new ModelAndView("redirect:/outings/" + id);
+        // Vérification id
+        if (!rightsChecker.isModificationPermitted(principal.getName(),outing.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
+            return new ModelAndView("redirect:/outings/");
         }
 
         try {
