@@ -94,6 +94,7 @@ public class SpringSecurity {
 
         http.csrf(config -> {
             config.ignoringRequestMatchers(anonymousRequests);
+            config.ignoringRequestMatchers("/logout");
         });
 
         return http.build();
