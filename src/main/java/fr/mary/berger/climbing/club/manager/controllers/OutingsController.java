@@ -171,62 +171,44 @@ public class OutingsController {
         return response;
     }
 
-    // TODO: Simplifier, tu as trois retour d'erreur avec trois syntaxes différentes
     @PostMapping("/{id}/update")
     public ModelAndView updateOuting(@PathVariable Long id,
-                                     @ModelAttribute("outing") OutingFormDTO updateDto,
+                                     @ModelAttribute("outing") OutingFormDTO outingFormDTO,
                                      BindingResult result,
                                      Principal principal,
                                      RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            ModelAndView mav = new ModelAndView("newOutingFormScreen");
-            mav.addObject("action", "edit");
-            mav.addObject("outing", updateDto);
-
-            /*  Je commente ça parce qu'il va falloir l'expliquer à Massat ou changer, requête négligeable avec 200 éléments
-                mais clairement pas maintenable sur beaucoup d'éléments, faut également passer le DTO pas l'entité Category
-                TODO: Réfléchir à implémenter le changement de catégorie autrement, une petite recherche par nom pourrait suffir
-                (D'autant plus si tu gardes les modifs de formulaire en session ou attribut)
-
-            Pageable allStyles = (Pageable) PageRequest.of(0, Integer.MAX_VALUE);
-            mav.addObject("categories", categoryService.getAllCategories((org.springframework.data.domain.Pageable) allStyles).getContent());
-            */
-
-            return mav;
+            ModelAndView response = new ModelAndView("newOutingFormScreen");
+            response.addObject("action", "edit");
+            response.addObject("outing", outingFormDTO);
+            return response;
         }
-
 
         Outing existingOuting = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        // Vérification id
+
         if (!rightsChecker.isModificationPermitted(principal.getName(),existingOuting.getId())) {
             redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
-            return new ModelAndView("redirect:/outings/");
+            return new ModelAndView("redirect:/outings");
         }
 
-        try {
-            existingOuting.setName(updateDto.getName());
-            existingOuting.setDescription(updateDto.getDescription());
-            existingOuting.setDate(updateDto.getDate());
-            existingOuting.setWebsite(updateDto.getWebsite());
-            if (updateDto.getCategoryId() != null) {
-                categoryService.findCategoryById(updateDto.getCategoryId())
-                        .ifPresent(existingOuting::setCategory);
-            }
+        existingOuting.setName(outingFormDTO.getName());
+        existingOuting.setDescription(outingFormDTO.getDescription());
+        existingOuting.setWebsite(outingFormDTO.getWebsite());
+        existingOuting.setDate(outingFormDTO.getDate());
 
-            outingService.updateOuting(existingOuting);
-
-            redirectAttributes.addFlashAttribute("success", "Sortie mise à jour avec succès !");
-            return new ModelAndView("redirect:/outings/" + id);
-
-        } catch (Exception e) {
-            ModelAndView localMaV = new ModelAndView("newOutingFormScreen");
-            localMaV.addObject("action", "edit");
-            localMaV.addObject("outing", updateDto);
-            localMaV.addObject("error", "Erreur lors de la mise à jour : " + e.getMessage());
-            return localMaV;
+        Optional<Category> category = categoryService.findCategoryById(outingFormDTO.getCategoryId());
+        if (category.isPresent()) {
+            existingOuting.setCategory(category.get());
+        } else {
+            ModelAndView response = new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            response.addObject("error", "Catégorie invalide");
+            return response;
         }
+
+        outingService.updateOuting(existingOuting);
+        return new ModelAndView("redirect:/outings/" + existingOuting.getId());
     }
 
 
