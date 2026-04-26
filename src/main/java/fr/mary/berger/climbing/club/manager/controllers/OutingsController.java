@@ -80,7 +80,7 @@ public class OutingsController {
                     .toList();
         }
 
-        ModelAndView response = new ModelAndView("newOutingFormScreen");
+        ModelAndView response = new ModelAndView("newOrEditOutingFormScreen");
         response.addObject("suggestedCategoryList", suggestedCategoryList);
         response.addObject("action", "create");
         response.addObject("outing", new OutingFormDTO());
@@ -93,7 +93,7 @@ public class OutingsController {
                                      RedirectAttributes redirectAttributes,
                                      Principal principal) {
         if (result.hasErrors()) {
-            return new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            return new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
         }
 
         Outing newOuting = new Outing();
@@ -106,7 +106,7 @@ public class OutingsController {
         if (owner.isPresent()) {
             newOuting.setOwner(owner.get());
         } else {
-            ModelAndView response = new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
             response.addObject("error", "Veuillez vous reconnecter");
             return response;
         }
@@ -115,7 +115,7 @@ public class OutingsController {
         if (category.isPresent()) {
             newOuting.setCategory(category.get());
         } else {
-            ModelAndView response = new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
             response.addObject("error", "Catégorie invalide");
             return response;
         }
@@ -164,7 +164,7 @@ public class OutingsController {
                  outing.getCategory().getId()
         );
 
-        ModelAndView response = new ModelAndView("newOutingFormScreen");
+        ModelAndView response = new ModelAndView("newOrEditOutingFormScreen");
         response.addObject("suggestedCategoryList", suggestedCategoryList);
         response.addObject("action", "edit");
         response.addObject("outing", outingDTO);
@@ -179,7 +179,7 @@ public class OutingsController {
                                      RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            ModelAndView response = new ModelAndView("newOutingFormScreen");
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen");
             response.addObject("action", "edit");
             response.addObject("outing", outingFormDTO);
             return response;
@@ -202,7 +202,7 @@ public class OutingsController {
         if (category.isPresent()) {
             existingOuting.setCategory(category.get());
         } else {
-            ModelAndView response = new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            ModelAndView response = new ModelAndView("newOrEditOutingFormScreen", "outingForm", outingFormDTO);
             response.addObject("error", "Catégorie invalide");
             return response;
         }
@@ -219,22 +219,15 @@ public class OutingsController {
 
         Outing outing = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
-        // Vérification id
+
         if (!rightsChecker.isModificationPermitted(principal.getName(),outing.getId())) {
             redirectAttributes.addFlashAttribute("error", "Vous ne possdez pas l'authorisation requise");
             return new ModelAndView("redirect:/outings/");
         }
 
-        try {
-            outingService.deleteOuting(id);
-
-            redirectAttributes.addFlashAttribute("success", "La sortie a été supprimée avec succès.");
-            return new ModelAndView("redirect:/categories");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de la suppression : " + e.getMessage());
-            return new ModelAndView("redirect:/outings/" + id);
-        }
+        outingService.deleteOuting(id);
+        redirectAttributes.addFlashAttribute("success", "La sortie a été supprimée avec succès.");
+        return new ModelAndView("redirect:/categories");
     }
 
 }

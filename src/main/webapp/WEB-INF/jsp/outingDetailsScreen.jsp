@@ -32,7 +32,10 @@
                         <c:if test="${pageContext.request.userPrincipal.name == outing.member().username()}">
                             <div class="d-flex gap-2">
                                 <a href="<c:url value='/outings/${outing.id()}/update'/>" class="btn btn-warning">Modifier ma sortie</a>
-                                <a href="<c:url value='/outings/${outing.id()}/delete'/>" class="btn btn-danger" onclick="return confirm('Supprimer définitivement ?')">Supprimer</a>
+                                <form method="POST" action="<c:url value='/outings/${outing.id()}/delete'/>" style="display:inline;">
+                                    <input type="hidden" name="_csrf" value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer définitivement ?')">Supprimer</button>
+                                </form>
                             </div>
                         </c:if>
                     </sec:authorize>
