@@ -1,8 +1,8 @@
 package fr.mary.berger.climbing.club.manager.controllers;
 
-import fr.mary.berger.climbing.club.manager.dto.outings.OutingRequestDTO;
-import fr.mary.berger.climbing.club.manager.dto.outings.OutingResponseDTO;
+import fr.mary.berger.climbing.club.manager.dto.outings.*;
 import fr.mary.berger.climbing.club.manager.models.Outing;
+import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,28 +24,28 @@ import java.security.Principal;
 public class OutingsController {
 
     private final OutingService outingService;
+    private final MemberService memberService;
 
-    // TODO: Utiliser le nouveau DTO PaginatedRessource dans OutingResponseDTO, voir todo dans outingResponseDTO
     // TODO: Modifier les anciens DTO pour séparer les responsabilités et supprimer les données/méthodes non essentielles
     @GetMapping("/{id}")
     public ModelAndView showOutingById(@PathVariable Long id, Principal principal, Model model) {
         Outing outing = outingService.findOutingById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sortie introuvable"));
 
-        OutingResponseDTO showingByIdDto = new OutingResponseDTO();
-        showingByIdDto.setId(outing.getId());
-        showingByIdDto.setName(outing.getName());
-        showingByIdDto.setDescription(outing.getDescription());
-        showingByIdDto.setDateOuting(outing.getDate());
+        boolean isMember = (principal != null);
+        String web = isMember ? outing.getWebsite() : "Masqué (Connectez-vous)";
+        String owner = isMember ? (outing.getOwner().getFirstName() + " " + outing.getOwner().getLastName()) : "Organisateur masqué";
 
-        // Verification d'identité
-        if (principal != null) { // Membre
-            showingByIdDto.setWebSite(outing.getWebsite());
-            showingByIdDto.setOwnerName(outing.getOwner().getFirstName() + " " + outing.getOwner().getLastName());
-        } else { // Visiteur
-            showingByIdDto.setWebSite("Connectez-vous pour voir le site");
-            showingByIdDto.setOwnerName("Masqué pour les non-membres");
-        }
+        OutingDTO showingByIdDto = new OutingDTO(
+                outing.getId(),
+                outing.getName(),
+                outing.getDescription(),
+                outing.getDate(),
+                null,
+                null,
+                null,
+                null
+        );
 
         model.addAttribute("sortie", showingByIdDto);
         return new ModelAndView("outingDetailsScreen", "sortie", showingByIdDto);
@@ -71,7 +71,7 @@ public class OutingsController {
 
     // TODO: À voir si réutiliser OutingRequestDTO est judidicieux, ou s'il faut en utiliser/créer un spécifique
     @PostMapping("/new")
-    public ModelAndView createOuting(@ModelAttribute("sortie") OutingRequestDTO outingDto,
+    public ModelAndView createOuting(@ModelAttribute("sortie") OutingDTO outingDto,
                                      BindingResult result,
                                      Principal principal,
                                      RedirectAttributes redirectAttributes) { // À voir si on ne peut pas réduire le nombre de params ici
@@ -83,10 +83,10 @@ public class OutingsController {
         try {
             // TODO: mieux gérer la création, à voir si on peut pas rajouter des validateurs, mais c'est pas la prio
             Outing creationOuting = new Outing();
-            creationOuting.setName(outingDto.getName());
-            creationOuting.setDescription(outingDto.getDescription());
-            creationOuting.setDate(outingDto.getDateOuting());
-            creationOuting.setWebsite(outingDto.getWebSite());
+            creationOuting.setName(outingDto.name());
+            creationOuting.setDescription(outingDto.description());
+            creationOuting.setDate(outingDto.date());
+            creationOuting.setWebsite(outingDto.website());
             outingService.createOuting(creationOuting);
 
             // TODO: Vérifier si ça vaudrait le coup de passer ça en ModelAndView, mais pas sur
@@ -101,7 +101,6 @@ public class OutingsController {
         }
     }
 
-    // TODO: faire la page jsp de modification (qui peut etre la même que celle de proposition mais en passant par un DTO)
     @GetMapping("/{id}/update")
     public ModelAndView showUpdateOutingForm(@PathVariable Long id, Principal principal, Model model) {
 
@@ -113,26 +112,24 @@ public class OutingsController {
             return new ModelAndView("redirect:/outings/" + id + "?error=unauthorized");
         }
 
-        // TODO: améliorer les noms des variables, et changer le DTO pour OutingDTO -> plus simple et évite la redondance, tu n'as qu'un seul resultat
-        // (à moins que tu veuilles transmettre une erreur en plus)
-        OutingRequestDTO updateDto = new OutingRequestDTO();
-        updateDto.setName(outing.getName());
-        updateDto.setDescription(outing.getDescription());
-        updateDto.setDateOuting(outing.getDate());
-        updateDto.setWebSite(outing.getWebsite());
-        updateDto.setIdCategory(outing.getCategory().getId());
+         OutingUpdateDTO updateDTO = new OutingUpdateDTO(
+                 outing.getId(),
+                 outing.getName(),
+                 outing.getDescription(),
+                 outing.getDate(),
+                 outing.getWebsite(),
+                 outing.getCategory().getId()
+        );
 
-        // Répétition, l'id est déjà dans updateDto
         ModelAndView localMaV = new ModelAndView();
-        localMaV.addObject("sortie", updateDto);
-        localMaV.addObject("outingId", id);
+        localMaV.addObject("sortie", updateDTO);
         return localMaV;
     }
 
     // TODO: Simplifier, tu as trois retour d'erreur avec trois syntaxes différentes
     @PostMapping("/{id}/update")
     public ModelAndView updateOuting(@PathVariable Long id,
-                                     @ModelAttribute("sortie") OutingRequestDTO updateDto,
+                                     @ModelAttribute("sortie") OutingDTO updateDto,
                                      BindingResult result,
                                      Principal principal,
                                      RedirectAttributes redirectAttributes) {
@@ -161,10 +158,10 @@ public class OutingsController {
         }
 
         try {
-            existingOuting.setName(updateDto.getName());
-            existingOuting.setDescription(updateDto.getDescription());
-            existingOuting.setDate(updateDto.getDateOuting());
-            existingOuting.setWebsite(updateDto.getWebSite());
+            existingOuting.setName(updateDto.name());
+            existingOuting.setDescription(updateDto.description());
+            existingOuting.setDate(updateDto.date());
+            existingOuting.setWebsite(updateDto.website());
 
             outingService.updateOuting(existingOuting);
 
