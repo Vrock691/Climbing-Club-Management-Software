@@ -107,15 +107,73 @@ Page d'accueil : Affichage dynamique des catégories d'escalade.Liste des sortie
 
 == DAO
 
+Les DAO (Data Acess Object) sont l'interface entre l'application et la base de donnée.
+- CategoryDAO : Cette interface gère la persistence des catégories de sortie et est principalement utilisée dans les listes déroulantes lors des création de sorties et contient une méthode permettant la recherche par nom.
+- MemberDAO: Cette interface permet de manipuler les données relatives aux membres, elle permet de récupérer un membre à partir de son ID ainsi que la persistence des nouveaux membres lors de l'inscription.
+- OutingDAO : Cette interface est le coeur de l'application, elle gère le stockage et la récupération des sorties d'escalade. L'utilisation de `JpaScecificationExecutor` permet la génération de requête SQL en fonctiondes critères de recherche.
+- PasswordRecoveryTokenDao : Cette interface est liée à la réinitialisation de mot passe, elle permet stocker et supprimer les tokens générés quand utilisateur oublie son mot de passe.
+
 == DTO
+
+L'utilisation de DTO nous permet de ne transmettre à le vue seulement les information qui lui sont nécessaire et ainsi éviter tout problème de sécurité ou de performances.
+Le package se décompose de la manière suivante :
+```
+DTO
+├── categories
+│    └── CategoryDTO
+├── member
+│    └── MemberDTO
+├── outings
+│    ├── OutingDTO
+│    ├── OutingSearchCriteria
+│    ├── OutingsListResponseDTO
+│    └── OutingUpdateDTO
+└── PaginatedResponse
+```
+- CategoryDTO : Ce DTO contient le nom et l'identifiant des catégories.
+- MemberDTO : Ce DTO contient les informations d'un membre (nom, prénom, username).
+- OutingDTO : C'est le DTO principal, il contient les informations de la sortie (id, nom, description, website, date) sa catégorie (CategoryDTO) et son organisateur (MemberDTO).
+- OutingSearchCriteria : Ce DTO récupère les critères de filtrage saisis pas l'utilisateur dans le moteur de recherche et les passe au `Services` pour construire la requête en fonction des spécification JPA.
+- OutingsListResponseDTO : ce DTO est un wrapper utilisé pour l'écran de recherche. Il contient un `PaginatedResponse<OutingDTO>` pour les résultats, une liste de `MembreDTO` alimenter les filtres d'owners et une chane de caractère `error` pour renvoyer des message à l'utilisateur.
+- OutingUpdateDTO : Ce DTO est utilisé pour la mise à jour des sorties, il récupère les modifications de l'utilisateur pour modifier les appliquer à la sortie. // TODO :  est ce il est toujours en record ou c'est une classe ?
+- PaginatedResponse : Ce DTO est un conteneur qui englobe la liste des résultats, la page actuelle (taille et numéro de page), le nombre total d'éléments et de pages ainsi que la présence d'une page suivante ou précédente.
 
 == Model
 
-== Spring Security - package security 
+Le package models contient nos entités persistentes, les classes java sont mappées directement aux ables de notre base de donnée depuis les annotations JPA.
+- Category : Cette entité représente les différentes catégories et possède une relation `@OneToMany` vers `Outing`.
+- Member : Cette entité stocke les informations d'identité (nom, prénom) et de connexion (username, email, encodedpassword) des utilisateurs et possède une relation `@OneToMany` vers `Outing`.
+- Outing : Cette entité contient les attributs d'une sortie (nom, description, date, website) et possède deux clés étrangères : une relation `@ManyToOne` ver `Category` et une autre relation `@ManyToOne` ver `Member`.
+- PaswordRecoveryToken : Cette entité est liée à la sécurité, elle contient le token, la date d'expiration et une relation `@OneToOne` vers le `Member` concerné ce qui permet de valider une seule fois et pendant un laps de temps la réinitialisation du mot de passe avant la supression du token.
+
+== Spring Security - package security
+
+La securité de notre application repose sur deux points : le gestion d'accès via SpringSecurity et la validation des droits métiers via le validator.
+- SpringSecurity :
+Authentification : Nous utilisons un system `Form Login` où SpringSecurity interagit avec notre MemberService pour vérifier les ID dans la base de donnée.
+Autorisation : Nous avons restreint l'accès (URL) à certaines pages aux simple visiteurs (`/outings/new`, `/outings/*/update`, `/outings/*/delete`).
+Gestion de session : Une fois connecté, l'utilisateur dispose d'un objet `Principal` qui nous permet de l'identifier dans toute l'application.
+
+- OutingModificationRightsChecker (validator) : Cette classe sert principalement à éviter la répétition de code lors de la vérification de l'ID pour la modification d'une sortie. Elle fait en sorte que seul le créateur de la sortie ne puisse la modifier.
 
 == Service
 
+Les clesses du package services sont la couche métier de l'application, elles servent d'intermédiaires entre les contrôleurs et les DAO.
+- CategoryService : Ce service permet de récupérer la liste complete des catégories pour le menus de navigation.
+- EmailService : Ce service utilise JavaMailSender pour envoyer des mail de réinitialisation de mot de passe.
+- MemberService : Ce service sert à la création de nouveaux comptes, la recherche de membre par l'ID et la mise à jour des informations d'un membre.
+- OutingService : Ce service sert à la création et mise à jour des sorties  (lie l'organisateur et la catégorie),
+                à la gestion de la supression,
+                à la recherche via les spécifications JPA pour retourner diltrés et paginés et
+                à la transformation des entités `Outing` vers les record `OutingDTO`.
+- PasswordRecoveryTokenService : Ce service gère génère les token, définit leur date d'expiration, vérifie leurs validité lorsqu'un utilisateur clique sur le lien et supprime ensuite le token.
+
 == Spécification
+
+//TODO : pas sur de moi
+- OutingSpecification : Cette classe ne contient qu'une seule `withCriteria` qui transforme un record `OutingSearchCriteria` en un objet `Specification`.
+Logique de prédicat : L'`ArrayList<Predicat>` permet d'ajouter un critère que s'il est renseigné par l'utilisateur.
+Filtrage par listes : Utilisation de l'opératuer SQL `IN` pour pouvoir selectionner plusieurs critères en même temps.
 
 = Tests, CI et démonstration
 
