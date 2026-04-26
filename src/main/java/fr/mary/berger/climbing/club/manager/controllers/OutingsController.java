@@ -3,11 +3,17 @@ package fr.mary.berger.climbing.club.manager.controllers;
 import fr.mary.berger.climbing.club.manager.dto.categories.CategoryDTO;
 import fr.mary.berger.climbing.club.manager.dto.member.MemberDTO;
 import fr.mary.berger.climbing.club.manager.dto.outings.*;
+import fr.mary.berger.climbing.club.manager.models.Category;
+import fr.mary.berger.climbing.club.manager.models.Member;
 import fr.mary.berger.climbing.club.manager.models.Outing;
+import fr.mary.berger.climbing.club.manager.services.CategoryService;
 import fr.mary.berger.climbing.club.manager.services.MemberService;
 import fr.mary.berger.climbing.club.manager.services.OutingService;
 import fr.mary.berger.climbing.club.manager.security.validators.OutingModificationRightsChecker;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +24,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/outings")
@@ -27,6 +36,7 @@ public class OutingsController {
     private final OutingService outingService;
     private final MemberService memberService;
     private final OutingModificationRightsChecker rightsChecker;
+    private final CategoryService categoryService;
 
     @GetMapping("/{id}")
     public ModelAndView showOutingById(@PathVariable Long id, Principal principal) {
@@ -56,52 +66,63 @@ public class OutingsController {
     }
 
     @GetMapping("/new")
-    public String showCreateOutingForm(Model model) {
+    public ModelAndView showCreateOutingForm(@RequestParam @Nullable String searchCategory) {
+        List<CategoryDTO> suggestedCategoryList;
+        Pageable pageable = PageRequest.of(0, 10);
+        if (searchCategory == null) {
+            suggestedCategoryList = categoryService.getAllCategories(pageable)
+                    .stream()
+                    .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                    .toList();
+        } else {
+            suggestedCategoryList = categoryService.findCategoryByNamePattern(searchCategory, pageable)
+                    .stream()
+                    .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                    .toList();
+        }
 
-        /*
-        TODO: T'as codé ça, mais je sais pas si c'est utile vu qu'on renvoi un html avec tout les champs vide pour la création, à moins que des infos doivent apparaitre sur l'écran
-        (À toi de voir si ça vaut le coup de mettre ça, sinon un renvoi en string simple suffit, pas besoin de DTO)
-
-        ModelAndView localMaV = new ModelAndView("form_outing");
-        localMaV.addObject("sortie", new OutingRequestDTO());
-
-        Pageable allStyles = (Pageable) PageRequest.of(0, Integer.MAX_VALUE);
-        localMaV.addObject("categories", categoryService.getAllCategories((org.springframework.data.domain.Pageable) allStyles).getContent());
-        return localMaV;
-         */
-
-        return "newOutingFormScreen";
+        ModelAndView response = new ModelAndView("newOutingFormScreen");
+        response.addObject("suggestedCategoryList", suggestedCategoryList);
+        response.addObject("action", "create");
+        response.addObject("outing", new OutingFormDTO());
+        return response;
     }
 
-    // TODO: À voir si réutiliser OutingRequestDTO est judidicieux, ou s'il faut en utiliser/créer un spécifique
     @PostMapping("/new")
-    public ModelAndView createOuting(@ModelAttribute("sortie") OutingDTO outingDto,
+    public ModelAndView createOuting(@ModelAttribute("outing") OutingFormDTO outingFormDTO,
                                      BindingResult result,
-                                     Principal principal,
-                                     RedirectAttributes redirectAttributes) { // À voir si on ne peut pas réduire le nombre de params ici
+                                     RedirectAttributes redirectAttributes,
+                                     Principal principal) {
         if (result.hasErrors()) {
-            // TODO: passer l'erreur -> Changer/créer le dto pour prévoir le handle
-            return new ModelAndView("form_outing", "sortie", outingDto);
+            return new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
         }
 
-        try {
-            // TODO: mieux gérer la création, à voir si on peut pas rajouter des validateurs, mais c'est pas la prio
-            Outing creationOuting = new Outing();
-            creationOuting.setName(outingDto.name());
-            creationOuting.setDescription(outingDto.description());
-            creationOuting.setDate(outingDto.date());
-            creationOuting.setWebsite(outingDto.website());
-            outingService.createOuting(creationOuting);
+        Outing newOuting = new Outing();
+        newOuting.setName(outingFormDTO.getName());
+        newOuting.setDescription(outingFormDTO.getDescription());
+        newOuting.setWebsite(outingFormDTO.getWebsite());
+        newOuting.setDate(outingFormDTO.getDate());
 
-            redirectAttributes.addFlashAttribute("success", "Votre sortie a été créée avec succès !");
-            return new ModelAndView("redirect:/categories");
-
-        } catch (Exception e) {
-            // TODO: Complexe: peut-etre que le dto peut contenir cette erreur et celle d'au dessus
-            ModelAndView localMaV = new ModelAndView("form_outing", "sortie", outingDto);
-            localMaV.addObject("error", "Une erreur est survenue : " + e.getMessage());
-            return localMaV;
+        Optional<Member> owner = memberService.findMemberByUsername(principal.getName());
+        if (owner.isPresent()) {
+            newOuting.setOwner(owner.get());
+        } else {
+            ModelAndView response = new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            response.addObject("error", "Veuillez vous reconnecter");
+            return response;
         }
+
+        Optional<Category> category = categoryService.findCategoryById(outingFormDTO.getCategoryId());
+        if (category.isPresent()) {
+            newOuting.setCategory(category.get());
+        } else {
+            ModelAndView response = new ModelAndView("newOutingFormScreen", "outingForm", outingFormDTO);
+            response.addObject("error", "Catégorie invalide");
+            return response;
+        }
+
+        outingService.createOuting(newOuting);
+        return new ModelAndView("redirect:/outings/{" + newOuting.getId() + "}");
     }
 
     @GetMapping("/{id}/update")
@@ -115,7 +136,7 @@ public class OutingsController {
             return new ModelAndView("redirect:/outings/");
         }
 
-         OutingUpdateDTO updateDTO = new OutingUpdateDTO(
+         OutingFormDTO updateDTO = new OutingFormDTO(
                  outing.getId(),
                  outing.getName(),
                  outing.getDescription(),
@@ -124,22 +145,24 @@ public class OutingsController {
                  outing.getCategory().getId()
         );
 
-        ModelAndView localMaV = new ModelAndView();
-        localMaV.addObject("sortie", updateDTO);
+        ModelAndView localMaV = new ModelAndView("newOutingFormScreen");
+        localMaV.addObject("action", "edit");
+        localMaV.addObject("outing", updateDTO);
         return localMaV;
     }
 
     // TODO: Simplifier, tu as trois retour d'erreur avec trois syntaxes différentes
     @PostMapping("/{id}/update")
     public ModelAndView updateOuting(@PathVariable Long id,
-                                     @ModelAttribute("sortie") OutingDTO updateDto,
+                                     @ModelAttribute("outing") OutingFormDTO updateDto,
                                      BindingResult result,
                                      Principal principal,
                                      RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            ModelAndView mav = new ModelAndView("form_outing");
-            mav.addObject("outingId", id); // Pourquoi pas passer OutingDTO ?
+            ModelAndView mav = new ModelAndView("newOutingFormScreen");
+            mav.addObject("action", "edit");
+            mav.addObject("outing", updateDto);
 
             /*  Je commente ça parce qu'il va falloir l'expliquer à Massat ou changer, requête négligeable avec 200 éléments
                 mais clairement pas maintenable sur beaucoup d'éléments, faut également passer le DTO pas l'entité Category
@@ -163,10 +186,14 @@ public class OutingsController {
         }
 
         try {
-            existingOuting.setName(updateDto.name());
-            existingOuting.setDescription(updateDto.description());
-            existingOuting.setDate(updateDto.date());
-            existingOuting.setWebsite(updateDto.website());
+            existingOuting.setName(updateDto.getName());
+            existingOuting.setDescription(updateDto.getDescription());
+            existingOuting.setDate(updateDto.getDate());
+            existingOuting.setWebsite(updateDto.getWebsite());
+            if (updateDto.getCategoryId() != null) {
+                categoryService.findCategoryById(updateDto.getCategoryId())
+                        .ifPresent(existingOuting::setCategory);
+            }
 
             outingService.updateOuting(existingOuting);
 
@@ -174,7 +201,9 @@ public class OutingsController {
             return new ModelAndView("redirect:/outings/" + id);
 
         } catch (Exception e) {
-            ModelAndView localMaV = new ModelAndView("form_outing");
+            ModelAndView localMaV = new ModelAndView("newOutingFormScreen");
+            localMaV.addObject("action", "edit");
+            localMaV.addObject("outing", updateDto);
             localMaV.addObject("error", "Erreur lors de la mise à jour : " + e.getMessage());
             return localMaV;
         }
