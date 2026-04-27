@@ -23,6 +23,7 @@
   #text(size: 10pt)[#datetime.today().display("[day]/[month]/[year]")]
 ]
 
+
 = Introduction
 Dans le cadre du cours d'architecture JEE, nous avons réalisé une application de gestion de club d'escalade, en suivant les différentes préconisation et attendu du sujet, et du cahier des charges fourni.
 
@@ -242,7 +243,21 @@ Le fichier de configuration YAML définit un environnement de build sous Ubuntu 
 - Exécution des Tests (mvn test) : C'est le cœur de la validation. Toutes les suites de tests sont lancées. Grâce à notre TestDataInitializer annoté `@Profile("test")`, la CI dispose d'une base de données éphémère parfaitement peuplée pour valider le comportement des services dans un environnement identique à celui du développement.
 
 = Points d'amélioration
-pas assez de service pour le moment(encapsulation des donéées en dto), plus de tests, responsabilité des contrôlers, plus de validateus (formulaire / longueur de mdp), recherche de catégorie dans les formulaires
+
+Bien que l'application réponde à l'ensemble des exigences du cahier des charges, plusieurs axes d'amélioration ont été identifiés :
+- Architecture et encapsulation : Renforcement de la couche Service en isolant mieux la transformation des entités vers les DTO ainsi que la délégation de certaines responsabilités des contrôleurs vers des services dédiés ou des façades.
+- Validation et sécurité : Ajout de validateurs dans les formulaire pour renforcer la qualité de saisie (ex : longueur minimale de mot de passe).
+- Expérience utilisateur : Mettre la recherche de catégories dans des formulaires (liste déroulante peu ergonomique avec beaucoup de catégories).
+- Extensions des tests : Couvrir dans un premiers temps la couche web et dans un deuxième temps les nouveaux services à prévoir (cf. architecture et encapsulation)
 
 = Conclusion
-Spring, archi en couche, c'était cool
+La réalisation de cette application de gestion pour le club d'escalade a constitué un exercice complet de développement logiciel moderne. Ce projet nous a permis de mettre en oeuvre les compétences acquise pendant les TPs.
+
+L'un des apports majeurs de ce projet a été l'apprentissage de Spring. Nous avons découvert comment structurer un projet en utilisant ce framework. Apprendre à configurer la sécurité avec Spring Security, à gérer la persistance avec Spring Data JPA et à lier le tout à une interface JSP nous a permis de comprendre la puissance d'un environnement industriel. Nous avons appris à ne plus simplement "écrire du code", mais à utiliser un écosystème complet pour répondre à des besoins complexes.
+
+Ce projet a aussi été notre premier véritable terrain de jeu pour mettre en pratique une architecture en couches (Controller, Service, DAO, Model). Nous avons appris l'importance de séparer les responsabilités entre Contrôleurs, Services et DAO. 
+
+En résumé, ce projet a été une expérience à la fois marquante et stimulante qui, quand elle finit par fonctionner donne une réelle satisfaction.
+
+== Identifiants de connexion :
+ID : JLM / mdp : JLMpassword
