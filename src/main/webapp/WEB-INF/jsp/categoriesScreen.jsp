@@ -5,7 +5,6 @@
 <main class="container my-5">
     <h1>Categories</h1>
 
-    <!-- Search Form -->
     <div class="row mb-5">
         <div class="col-md-6 mx-auto">
             <form method="GET" action="<c:url value='/categories'/>" class="input-group">
@@ -58,7 +57,6 @@
     <c:if test="${paginatedResponse.totalPages() > 1}">
         <nav class="mt-5" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-                <!-- Previous Button -->
                 <li class="page-item <c:if test="${paginatedResponse.isFirst()}">disabled</c:if>">
                     <a class="page-link" href="<c:url value='/categories?page=${paginatedResponse.pageNumber() - 1}'/>" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
@@ -72,7 +70,6 @@
                     </li>
                 </c:forEach>
 
-                <!-- Next Button -->
                 <li class="page-item <c:if test="${paginatedResponse.isLast()}">disabled</c:if>">
                     <a class="page-link" href="<c:url value='/categories?page=${paginatedResponse.pageNumber() + 1}'/>" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
@@ -81,7 +78,6 @@
             </ul>
         </nav>
 
-        <!-- Pagination Info -->
         <div class="text-center text-muted mt-3">
             <small>Page ${paginatedResponse.pageNumber() + 1} sur ${paginatedResponse.totalPages()} | ${paginatedResponse.totalElements()} résultats</small>
         </div>

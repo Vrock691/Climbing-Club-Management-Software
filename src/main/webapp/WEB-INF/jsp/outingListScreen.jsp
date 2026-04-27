@@ -101,21 +101,18 @@
     <c:if test="${paginatedResponse.outings().totalPages() > 1}">
         <nav class="mt-5" aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-                <!-- Previous Button -->
                 <li class="page-item <c:if test="${paginatedResponse.outings().isFirst()}">disabled</c:if>">
                     <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() - 1}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
 
-                <!-- Page Numbers -->
                 <c:forEach begin="0" end="${paginatedResponse.outings().totalPages() - 1}" var="pageNum">
                     <li class="page-item <c:if test="${pageNum == paginatedResponse.outings().pageNumber()}">active</c:if>">
                         <a class="page-link" href="<c:url value='?page=${pageNum}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />">${pageNum + 1}</a>
                     </li>
                 </c:forEach>
 
-                <!-- Next Button -->
                 <li class="page-item <c:if test="${paginatedResponse.outings().isLast()}">disabled</c:if>">
                     <a class="page-link" href="<c:url value='?page=${paginatedResponse.outings().pageNumber() + 1}&name=${param.name}&ownerIds=${param.ownerIds}&dateFrom=${param.dateFrom}&dateTo=${param.dateTo}' />" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
@@ -124,7 +121,6 @@
             </ul>
         </nav>
 
-        <!-- Pagination Info -->
         <div class="text-center text-muted mt-3">
             <small>Page ${paginatedResponse.outings().pageNumber() + 1} sur ${paginatedResponse.outings().totalPages()} | ${paginatedResponse.outings().totalElements()} résultats</small>
         </div>
