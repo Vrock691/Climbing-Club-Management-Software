@@ -37,14 +37,14 @@ public class SpringSecurity {
     @PostConstruct
     public void init() {
         Member newMember = new Member();
-        newMember.setUsername("VM");
-        newMember.setFirstName("Mary");
-        newMember.setLastName("Valentin");
-        newMember.setEmail("valentin.mary@proton.me");
-        newMember.setEncodedPassword(passwordEncoder.encode("VMpassword"));
+        newMember.setUsername("JLM");
+        newMember.setFirstName("Massat");
+        newMember.setLastName("Jean-Luc");
+        newMember.setEmail("jean-luc.massat@univ-amu.fr");
+        newMember.setEncodedPassword(passwordEncoder.encode("JLMpassword"));
         memberService.createMember(newMember);
 
-        log.info("New member created (VM)");
+        log.info("New member created (JLM)");
     }
 
     @Bean
