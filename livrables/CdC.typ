@@ -35,13 +35,13 @@ L'application doit se comporter différemment selon la personne qui l'utilise :
 - Consultation publique : Tout visiteur doit pouvoir voir la liste des sorties et les détails généraux.
 - Création/Modification : Un membre connecté doit pouvoir créer une sortie mais seul l'organisateur (owner) doit avoir le droit de modifier ou supprimer sa propre sortie.
 - Catégorisation : Chaque sortie doit être rattachée à une catégorie et un membre (owner).
-- Confidentialité : Les informations sensibles (site web, nom de l'organisateur) ne doivent pas être visibles par les visiteurs et membres non authentifié.
+- Confidentialité : Les informations sensibles (site web, nom de l'organisateur) ne doivent pas être visibles par les visiteurs et membres non authentifiés.
 
 == Recherche et Navigation
 
 Utilisation d'un moteur de recherche avancé : Filtrage dynamique par nom, par catégories, par organisateurs ou par plage de dates.
 \
-Les résultats doivent être paginés coté serveur pour supporter un grand volume de données (20 000+ sorties).
+Les résultats doivent être paginés côté serveur pour supporter un grand volume de données (20 000+ sorties).
 
 == Gestion de membre
 
@@ -49,12 +49,11 @@ Les membres doivent pouvoir utiliser un certain nombre de fonctionnalités et de
 - Authentification : Système de connexion sécurisé par identifiant/mot de passe.
 - Inscription : Possibilité de créer un compte membre.
 - Récupération de mot de passe : Processus sécurisé par envoi d'email et token temporaire en cas d'oubli.
-- Profil : Modification des informations personnelles.
 
 #pagebreak()
 = Spécifications Techniques
 
-== Technologies utilisé
+== Technologies utilisées
 
 - Langage : Java 25.
 - Framework : Spring Boot 3.
@@ -70,11 +69,11 @@ L'architecture de l'application doit remplir certains critères :
 - Transfert de données : Utilisation systématique de Java Records pour les DTO afin de garantir l'immuabilité.
 - Requêtage dynamique : Utilisation de l'API JPA Criteria via les Specifications pour le moteur de recherche.
 
-= Contraintes de Qualité et Developemment
+= Contraintes de Qualité et Développement
 
 == Robustesse et tests
 
-L'application doit contenir une section de tests couvrant un maximum de son code comprenant des tests unitaires (utilisation de JUnit 5 et Mockito) ainsi que des tests d'intégration (validation du service membre avec la base de donnée)
+L'application doit contenir une section de tests couvrant un maximum de son code comprenant des tests unitaires (utilisation de JUnit 5 et Mockito) ainsi que des tests d'intégration (validation du service membre avec la base de données)
 
 
 == CI
