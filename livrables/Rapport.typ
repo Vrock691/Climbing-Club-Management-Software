@@ -1,6 +1,6 @@
 #set document(
   title: "Rapport",
-  author: "Auteur",
+  author: "Maxime Berger - Valentin Mary",
 )
 
 #set page(
@@ -76,6 +76,7 @@ Rentrons à présent dans le détails de l'implémentation de notre application,
 Dans le package de configuration, on retrouve les classes suivantes :
 - PasswordEncoderConfig : Cette classe est annotée avec `@Configuration`, et permet de définir un bean de type PasswordEncoder, qui est utilisé par Spring Security pour encoder les mots de passe des membres. Nous avons choisi d'utiliser l'algorithme BCrypt, qui est considéré comme sécurisé pour le stockage des mots de passe.
 - UrlConfig : Cette classe est annotée avec `@Component`, et est consituée d'une propriété "baseUrl" qui est injectée depuis le fichier application.properties. Cette classe est utilisée pour centraliser l'url de base de l'application, qui est utilisée notamment dans les emails de réinitialisation de mot de passe.
+#pagebreak()
 
 == Controller
 Dans le package de controller, on retrouve les classes de gestion des routes HTTP. Celle ci implémente l'arbre de navigation suivant:
@@ -101,11 +102,29 @@ En conséquence, on retrouve les classes suivantes :
 - OutingController : Cette classe gère les routes "/outings", qui correspondent à la page de visualisation avancée des différentes sorties d'escalade en fonction d'un id sélectionnée, mais également au route de création/modification des sorties de l'utilisateur connecté.
 - AuthController : Cette classe gère les routes "/auth", qui correspondent à la page de connexion, de demande de réinitialisation de mot de passe, et de changement de mot de passe. La route de connexion est gérée par Spring Security, tandis que les routes de réinitialisation et de changement de mot de passe sont gérées par des méthodes spécifiques dans cette classe.
 
-=== Gestion pages JSP
+== Gestion pages JSP
 
-Page d'accueil : Affichage dynamique des catégories d'escalade.Liste des sorties : Système de navigation par catégorie avec pagination pour gérer le volume de données.Détails de sortie : Affichage public limité. Les visiteurs voient la description mais pas les infos privées (site web/organisateur).
+L'interface utilisateur est décomposé en plusisuers fichiers JSP, permettant une séparation claire entre les éléments de structure et les contenus spécifiques.
+=== Fragments de structure
+- header : Cette page contient les métadonnées, les liens vers les fichiers CSS et les scripts JavaScript.
+- navbar : Cette page contient la barre de navigation dynamique qui adapte ses liens selon que l'utilisateur est un simple visiteur ou un membre connecté.
+- footer : Cette page contient le pieds de page standardisé et affiché sur l'ensemble du site.
 
-== DAO
+=== Écrans de consultation et d'accueil
+- homescreen : Cette page contient la page de garde présentant le club et les actualités.
+- categoriesScreen : Cette page affiche la liste des catégories d'escalade disponibles pour orienter l'utilisateur.
+- outinglist : Cette page affiche les résultats de recherche ou les sorties liées à une catégorie. C'est ici qu'est gérée la pagination.
+- outingdetailsScreen : Cette page est une vue détaillée d'une sortie spécifique avec gestion de la confidentialité (masquage des données privées pour les non-membres).
+
+=== Formulaires et Gestion des sorties
+- newoutingformScreen : Cette page contient un formulaire utilisé pour la création et la modification d'une sortie. L'affichage s'adapte dynamiquement selon que l'objet reçu est un nouveau record ou une mise à jour.
+
+=== Authentification et Sécurité
+- loginscreen : Cette page contient l'interface de connexion sécurisée gérée par Spring Security.
+- forgotpasswordScreen : Cette page permet de saisir son email pour recevoir un lien de récupération.
+- changepasswordScreen : Cette page contient le formulaire de saisie du nouveau mot de passe, accessible uniquement via un token valide ou une session sécurisée.
+
+=== DAO
 
 Les DAO (Data Acess Object) sont l'interface entre l'application et la base de donnée.
 - CategoryDAO : Cette interface gère la persistence des catégories de sortie et est principalement utilisée dans les listes déroulantes lors des création de sorties et contient une méthode permettant la recherche par nom.
@@ -135,7 +154,7 @@ DTO
 - OutingDTO : C'est le DTO principal, il contient les informations de la sortie (id, nom, description, website, date) sa catégorie (CategoryDTO) et son organisateur (MemberDTO).
 - OutingSearchCriteria : Ce DTO récupère les critères de filtrage saisis pas l'utilisateur dans le moteur de recherche et les passe au `Services` pour construire la requête en fonction des spécification JPA.
 - OutingsListResponseDTO : ce DTO est un wrapper utilisé pour l'écran de recherche. Il contient un `PaginatedResponse<OutingDTO>` pour les résultats, une liste de `MembreDTO` alimenter les filtres d'owners et une chane de caractère `error` pour renvoyer des message à l'utilisateur.
-- OutingUpdateDTO : Ce DTO est utilisé pour la mise à jour des sorties, il récupère les modifications de l'utilisateur pour modifier les appliquer à la sortie. // TODO :  est ce il est toujours en record ou c'est une classe ?
+- OutingUpdateDTO : Ce DTO est utilisé pour la mise à jour des sorties, il récupère les modifications de l'utilisateur pour modifier les appliquer à la sortie.
 - PaginatedResponse : Ce DTO est un conteneur qui englobe la liste des résultats, la page actuelle (taille et numéro de page), le nombre total d'éléments et de pages ainsi que la présence d'une page suivante ou précédente.
 
 == Model
@@ -163,14 +182,13 @@ Les clesses du package services sont la couche métier de l'application, elles s
 - EmailService : Ce service utilise JavaMailSender pour envoyer des mail de réinitialisation de mot de passe.
 - MemberService : Ce service sert à la création de nouveaux comptes, la recherche de membre par l'ID et la mise à jour des informations d'un membre.
 - OutingService : Ce service sert à la création et mise à jour des sorties  (lie l'organisateur et la catégorie),
-                à la gestion de la supression,
-                à la recherche via les spécifications JPA pour retourner diltrés et paginés et
-                à la transformation des entités `Outing` vers les record `OutingDTO`.
+                - à la gestion de la supression,
+                - à la recherche via les spécifications JPA pour retourner diltrés et paginés et
+                - à la transformation des entités `Outing` vers les record `OutingDTO`.
 - PasswordRecoveryTokenService : Ce service gère génère les token, définit leur date d'expiration, vérifie leurs validité lorsqu'un utilisateur clique sur le lien et supprime ensuite le token.
 
 == Spécification
 
-//TODO : pas sur de moi
 - OutingSpecification : Cette classe ne contient qu'une seule `withCriteria` qui transforme un record `OutingSearchCriteria` en un objet `Specification`.
 Logique de prédicat : L'`ArrayList<Predicat>` permet d'ajouter un critère que s'il est renseigné par l'utilisateur.
 Filtrage par listes : Utilisation de l'opératuer SQL `IN` pour pouvoir selectionner plusieurs critères en même temps.
@@ -179,10 +197,52 @@ Filtrage par listes : Utilisation de l'opératuer SQL `IN` pour pouvoir selectio
 
 == DataInitializers
 
+Pour mettre en place les tests et démonstrations, nous avons mis en place un classe d'initialisation de données `SampleDataInitalizer`
+
+Pour éviter de tout recréer à chaque redemarrage, le service vérifie si les tables sont vides grâce à la méthode `count()` avant de les recréer.
+
+Pour tester la robustesse, nous avons généré un grand jeu de données contenant :
+- 50 catégories.
+- 200 membres : chaque memebre est créé avec un mot de passe et encodé avec le `PasswordEncoder`.
+- 20 000 sorties : 100 sorties sont généré pour chaque membres et réparti équitablement dans les différentes catégories. Ce volume important nous a permis de tester l'efficacité de la pagination, la performance des spécifications JPA et la gestion des jointures entre les membres.
+
 == Tests unitaires
+
+Conformément aux consignes du sujet, nous avons fait des test unitaires couvrant l'intégralité de la couche service et sécurité. Certaines méthodes ne sont pas testés car elles apellent directement le DAO. Nous avons utilisé le framework JUnit5 ainsi que Mockito pour l'isolation des composants.
+
+=== Mocking
+
+Pour tester nos services sans solliciter la base de donnée (on évite de ralentir les tests et la dépendance à l'état des données) nous avons, dans les classes `TestOutingModificationRightsChecker` et `TestPasswordRecoveryTokenService` "mocké" les interfaces DAO.
+
+- TestOutingModificationRightsChecker : Cette classe vérifie que le système authorise ou refuse correctement l'accès à la modification d'une sortie en testant plusieurs scénario : l'utilisateur est le propiétaire (accès autorisé) l'utilisateur n'est pas le propiétaire (accès refusé) et la sortie n'existe pas.
+- TestCategoryService : Cette classe valide la récupération et la transformation des catégories, on s'assure que les `Category` sont bien converties en `CategoryDTO` et que les recherches par nom fonctionnent comme prévu.
+- TestMemberService : Cette classe vérifie le bon fonctionnement de la chaine Service #sym.arrow.r DAO #sym.arrow.r Base de donnée.
+- TestOutingService : Cette classe valide :
+  - La création et mise à jour d'une sortie.
+  - L'application des règles de confidentialité (données sensible masquées dans le DTO si l'utilisateur n'est pas connecté.
+  - L'intégration corracte avec les spécifications de recherche.
+- TestPasswordRecoveryTokenService : Cette classe vérifie l'état du token de récupération de mot de passe à chaque étape (génération, validation, date d'expiration et surppression) et s'assure qu'il ai le bon état à chaque fois. 
+- TestDataInitializer : Cette classe supprime dans un premier temps toutes les tables afin de garantir l'execution des tests dans un état connu et prévisible. Elle recrée ensuite les tables et test qu'il y ai bien le bon nombre de catégories, membres et sorties. 
 
 == CI
 
+L'une des exigences majeures de ce projet était de garantir la stabilité du code tout au long du cycle de développement. Pour ce faire, nous avons mis en place une chaîne d'Intégration Continue (CI) via GitHub Actions.
+
+=== Pipeline d'Intégration Continue
+Nous avons configuré un workflow automatisé (CI Build and Test) qui s'exécute de manière systématique dans les scénarios suivants :
+- À chaque push sur les branches main (production) et develop (développement).
+- Lors de l'ouverture ou de la mise à jour d'une Pull Request vers ces mêmes branches.
+
+Cela crée une "porte de qualité" : aucune modification ne peut être intégrée si elle casse le build ou si elle fait échouer un test existant.
+
+=== Étapes du Workflow
+Le fichier de configuration YAML définit un environnement de build sous Ubuntu et suit les étapes suivantes :
+- Préparation de l'environnement : Récupération du code source (checkout) et configuration du JDK 25 (distribution Temurin). L'utilisation d'un cache Maven permet d'optimiser le temps d'exécution en évitant de télécharger les dépendances à chaque passage.
+- Compilation et Packaging (mvn clean package) : Cette étape vérifie que le code compile sans erreur et que la structure du projet (ressources, configurations) permet de générer un artefact fonctionnel.
+- Exécution des Tests (mvn test) : C'est le cœur de la validation. Toutes les suites de tests sont lancées. Grâce à notre TestDataInitializer annoté `@Profile("test")`, la CI dispose d'une base de données éphémère parfaitement peuplée pour valider le comportement des services dans un environnement identique à celui du développement.
+
 = Points d'amélioration
+pas assez de service pour le moment(encapsulation des donéées en dto), plus de tests, responsabilité des contrôlers, plus de validateus (formulaire / longueur de mdp), recherche de catégorie dans les formulaires
 
 = Conclusion
+Spring, archi en couche, c'était cool
