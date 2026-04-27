@@ -23,6 +23,22 @@
   #text(size: 10pt)[#datetime.today().display("[day]/[month]/[year]")]
 ]
 
+#v(12pt)
+
+#rect(
+  width: 100%,
+  stroke: 1pt + rgb("#999999"),
+  fill: rgb("#F5F5F5"),
+  inset: 10pt,
+)[
+  #text(weight: "bold", fill: rgb("#555555"))[Connexion au compte de démonstration]
+  
+  #text( fill: rgb("#666666"))[
+    *Identifiant :* `JLM` \
+    *Mot de passe :* `JLMpassword`
+  ]
+]
+
 
 = Introduction
 Dans le cadre du cours d'architecture JEE, nous avons réalisé une application de gestion de club d'escalade, en suivant les différentes préconisations et attendus du sujet, et du cahier des charges fourni.
@@ -258,6 +274,3 @@ L'un des apports majeurs de ce projet a été l'apprentissage de Spring. Nous av
 Ce projet a aussi été notre premier véritable terrain de jeu pour mettre en pratique une architecture en couches (Controller, Service, DAO, Model). Nous avons appris l'importance de séparer les responsabilités entre Contrôleurs, Services et DAO. 
 
 En résumé, ce projet a été une expérience à la fois marquante et stimulante qui, quand elle finit par fonctionner donne une réelle satisfaction.
-
-== Identifiants de connexion :
-ID : JLM / mdp : JLMpassword
