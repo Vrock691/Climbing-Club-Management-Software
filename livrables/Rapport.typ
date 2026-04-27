@@ -93,7 +93,6 @@ Rentrons à présent dans les détails de l'implémentation de notre application
 Dans le package de configuration, on retrouve les classes suivantes :
 - PasswordEncoderConfig : Cette classe est annotée avec `@Configuration`, et permet de définir un bean de type PasswordEncoder, qui est utilisé par Spring Security pour encoder les mots de passe des membres. Nous avons choisi d'utiliser l'algorithme BCrypt, qui est considéré comme sécurisé pour le stockage des mots de passe.
 - UrlConfig : Cette classe est annotée avec `@Component`, et est constituée d'une propriété "baseUrl" qui est injectée depuis le fichier application.properties. Cette classe est utilisée pour centraliser l'url de base de l'application, qui est utilisée notamment dans les emails de réinitialisation de mot de passe.
-#pagebreak()
 
 == Controller
 Dans le package de controller, on retrouve les classes de gestion des routes HTTP. Celle-ci implémente l'arbre de navigation suivant:
